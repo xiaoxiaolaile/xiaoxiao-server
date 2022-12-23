@@ -4,23 +4,35 @@ import (
 	"fmt"
 	logs "github.com/sirupsen/logrus"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
 type Function struct {
-	Rules    []string
-	ImType   *Filter
-	UserId   *Filter
-	GroupId  *Filter
-	FindAll  bool
-	Admin    bool
-	Handle   func(s Sender) interface{}
-	Cron     string
-	Show     string
-	Priority int
-	Disable  bool
-	Hash     string
-	Hidden   bool
+	Rules   []string
+	ImType  *Filter
+	UserId  *Filter
+	GroupId *Filter
+	FindAll bool
+	Handle  func(s Sender) interface{} `json:"-"`
+	Show    string
+	Hidden  bool
+
+	Author      string
+	Origin      string
+	CreateAt    string
+	Description string
+	Version     string
+	Title       string
+	Platform    string
+	Priority    int
+	Cron        string
+	Admin       bool
+	Public      bool
+	Icon        string
+	Encrypt     bool
+	Disable     bool
+	Content     string
 }
 
 type Filter struct {
@@ -29,6 +41,79 @@ type Filter struct {
 }
 
 var functions []Function
+
+func getPlugins() []Function {
+	return functions
+}
+
+func createPlugins() {
+	db := BoltBucket("plugins")
+	db.Foreach(func(k, v []byte) error {
+		functions = append(functions, createPlugin(string(v)))
+		return nil
+	})
+}
+
+func createPlugin(str string) Function {
+	reg := "/\\*(.|\\r\\n|\\n)*?\\*/"
+	if res := regexp.MustCompile(reg).FindStringSubmatch(str); len(res) != 0 {
+		data := res[0]
+		//fmt.Println(data)
+		var rules []string
+		for _, res := range regexp.MustCompile(`@rule\s+(.+)`).FindAllStringSubmatch(data, -1) {
+			rules = append(rules, strings.Trim(res[1], " "))
+		}
+
+		return Function{
+			Rules:       rules,
+			Author:      getString("author", data),
+			Origin:      getString("origin", data),
+			CreateAt:    getString("create_at", data),
+			Description: getString("description", data),
+			Version:     getString("version", data),
+			Title:       getString("title", data),
+			Platform:    getString("platform", data),
+			Priority:    getInt("priority", data),
+			Cron:        getString("cron", data),
+			Admin:       getBool("admin", data),
+			Public:      getBool("public", data),
+			Icon:        getString("icon", data),
+			Encrypt:     getBool("encrypt", data),
+			Disable:     getBool("disable", data),
+			FindAll:     true,
+		}
+
+	}
+	return Function{
+		Content: str,
+		FindAll: true,
+	}
+}
+
+func getString(key, data string) string {
+	r := ""
+	for _, res := range regexp.MustCompile("@"+key+`\s+(.+)`).FindAllStringSubmatch(data, -1) {
+		r = strings.Trim(res[1], " ")
+	}
+	return r
+}
+
+func getInt(key, data string) int {
+	r := 0
+	for _, res := range regexp.MustCompile("@"+key+`\s+(.+)`).FindAllStringSubmatch(data, -1) {
+		s := strings.Trim(res[1], " ")
+		r, _ = strconv.Atoi(fmt.Sprint(s))
+	}
+	return r
+}
+
+func getBool(key, data string) bool {
+	r := false
+	for _, res := range regexp.MustCompile("@"+key+`\s+(.+)`).FindAllStringSubmatch(data, -1) {
+		r = strings.Trim(res[1], " ") == "true"
+	}
+	return r
+}
 
 func AddCommand(prefix string, funArray ...Function) {
 	for j := range funArray {

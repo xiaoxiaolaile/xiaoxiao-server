@@ -33,7 +33,7 @@ func GetDB() *bolt.DB {
 
 func InitStore() {
 	var err error
-	db, err = bolt.Open("xiaoxiao.cache", 0600, nil)
+	db, err = bolt.Open("sillyGirl.cache", 0600, nil)
 	if err != nil {
 		panic(err)
 	}

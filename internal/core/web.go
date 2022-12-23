@@ -14,7 +14,11 @@ import (
 	"strings"
 )
 
-var Server *gin.Engine
+var server *gin.Engine
+
+func ServerRun(add ...string) {
+	_ = server.Run(add...)
+}
 
 func initWeb() {
 
@@ -71,10 +75,15 @@ func initWeb() {
 	});
 	`
 
-	//todo 从存储的地方获取到
-	keyMap := initPlugin(scriptStr, scriptStr2)
+	createPlugins()
 
-	Server.NoRoute(func(c *gin.Context) {
+	keyMap := initServerPlugin(scriptStr, scriptStr2)
+
+	server.GET("/list", func(c *gin.Context) {
+		c.JSON(200, getPlugins())
+	})
+
+	server.NoRoute(func(c *gin.Context) {
 		//patchPostForm(c)
 		path := c.Request.URL.Path
 		method := strings.ToLower(c.Request.Method)
@@ -88,7 +97,11 @@ func initWeb() {
 	})
 }
 
-func initPlugin(scripts ...string) map[string]*WebService {
+/*
+*
+初始化server插件
+*/
+func initServerPlugin(scripts ...string) map[string]*WebService {
 	keyMap := make(map[string]*WebService)
 	for _, script := range scripts {
 		vm := newVm()
@@ -140,11 +153,10 @@ func newVm() *goja.Runtime {
 
 func init() {
 	gin.SetMode(gin.ReleaseMode)
-	Server = gin.New()
-	Server.GET("/name", func(ctx *gin.Context) {
+	server = gin.New()
+	server.GET("/name", func(ctx *gin.Context) {
 		ctx.String(200, "sillyGirl")
 	})
-	initWeb()
 
 }
 

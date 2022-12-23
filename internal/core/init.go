@@ -9,12 +9,15 @@ func Init() {
 	initTimeLoc()
 	initLog()
 	InitStore()
+	initWeb()
 	initToHandleMessage()
 
 	AddCommand("", Function{
-		Rules: []string{"^hello$"},
+		Rules: []string{"hello"},
 		Admin: true,
 		Handle: func(s Sender) interface{} {
+
+			logs.Printf("获取参数：%s", s.Get(0))
 			return "你好，小小 为您服务。"
 		},
 	})
