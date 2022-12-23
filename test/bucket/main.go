@@ -36,7 +36,7 @@ func (tfm myFieldNameMapper) MethodName(_ reflect.Type, m reflect.Method) string
 }
 
 func main() {
-	core.initStore()
+	core.InitStore()
 	vm := goja.New()
 	vm.SetFieldNameMapper(myFieldNameMapper{})
 	_ = vm.Set("console", _console)

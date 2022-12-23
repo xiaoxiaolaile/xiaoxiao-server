@@ -4,18 +4,12 @@ import (
 	"bufio"
 	logs "github.com/sirupsen/logrus"
 	"os"
-	"time"
 	"xiaoxiao/internal/core"
 )
 
 func main() {
-	loc, _ := time.LoadLocation("Asia/Shanghai")
-	time.Local = loc
 	core.Init()
 	sillyGirl := core.BoltBucket("sillyGirl")
-	//if sillyGirl.GetBool("anti_kasi") {
-	//	go utils.MonitorGoroutine()
-	//}
 	port := sillyGirl.GetString("port", "8080")
 	logs.Printf("Http服务已运行(%s)。", port)
 	go func() {

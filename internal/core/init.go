@@ -1,11 +1,28 @@
 package core
 
-import logs "github.com/sirupsen/logrus"
+import (
+	logs "github.com/sirupsen/logrus"
+	"time"
+)
 
 func Init() {
+	initTimeLoc()
 	initLog()
-	initStore()
+	InitStore()
 	initToHandleMessage()
+
+	AddCommand("", Function{
+		Rules: []string{"^hello$"},
+		Admin: true,
+		Handle: func(s Sender) interface{} {
+			return "你好，小小 为您服务。"
+		},
+	})
+}
+
+func initTimeLoc() {
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	time.Local = loc
 }
 
 func initLog() {

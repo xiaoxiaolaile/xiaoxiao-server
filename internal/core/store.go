@@ -31,7 +31,7 @@ func GetDB() *bolt.DB {
 	return db
 }
 
-func initStore() {
+func InitStore() {
 	var err error
 	db, err = bolt.Open("xiaoxiao.cache", 0600, nil)
 	if err != nil {
