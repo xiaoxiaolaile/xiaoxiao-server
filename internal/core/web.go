@@ -83,6 +83,19 @@ func initWeb() {
 		c.JSON(200, getPlugins())
 	})
 
+	server.GET("/rule", func(c *gin.Context) {
+		c.JSON(200, getRules())
+	})
+	server.GET("/module", func(c *gin.Context) {
+		c.JSON(200, getModules())
+	})
+	server.GET("/cron", func(c *gin.Context) {
+		c.JSON(200, getCron())
+	})
+	server.GET("/server", func(c *gin.Context) {
+		c.JSON(200, getServers())
+	})
+
 	server.NoRoute(func(c *gin.Context) {
 		//patchPostForm(c)
 		path := c.Request.URL.Path

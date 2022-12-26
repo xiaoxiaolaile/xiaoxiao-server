@@ -4,6 +4,7 @@ import (
 	"fmt"
 	logs "github.com/sirupsen/logrus"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -33,6 +34,8 @@ type Function struct {
 	Encrypt     bool
 	Disable     bool
 	Content     string
+	Module      bool
+	OnStart     bool
 }
 
 type Filter struct {
@@ -40,10 +43,63 @@ type Filter struct {
 	Items     []string
 }
 
-var functions []Function
+var functions Functions
 
-func getPlugins() []Function {
-	return functions
+// Functions 将[]string定义为MyStringList类型
+type Functions []Function
+
+// Len 实现sort.Interface接口的获取元素数量方法
+func (m Functions) Len() int {
+	return len(m)
+}
+
+// Less 实现sort.Interface接口的比较元素方法
+func (m Functions) Less(i, j int) bool {
+	return m[i].Priority > m[j].Priority
+}
+
+// Swap 实现sort.Interface接口的交换元素方法
+func (m Functions) Swap(i, j int) {
+	m[i], m[j] = m[j], m[i]
+}
+
+func getPlugins() Functions {
+	return getFunctions(func(d Function) bool {
+		return true
+	})
+}
+
+func getModules() []Function {
+	return getFunctions(func(d Function) bool {
+		return d.Module
+	})
+}
+
+func getRules() []Function {
+	return getFunctions(func(d Function) bool {
+		return d.Rules != nil
+	})
+}
+func getCron() []Function {
+	return getFunctions(func(d Function) bool {
+		return len(d.Cron) > 0
+	})
+}
+func getServers() []Function {
+	return getFunctions(func(d Function) bool {
+		return d.OnStart
+	})
+}
+
+func getFunctions(f func(d Function) bool) []Function {
+	sort.Sort(functions)
+	var data []Function
+	for _, function := range functions {
+		if f(function) {
+			data = append(data, function)
+		}
+	}
+	return data
 }
 
 func createPlugins() {
@@ -80,6 +136,8 @@ func createPlugin(str string) Function {
 			Icon:        getString("icon", data),
 			Encrypt:     getBool("encrypt", data),
 			Disable:     getBool("disable", data),
+			Module:      getBool("module", data),
+			OnStart:     getBool("on_start", data),
 			FindAll:     true,
 		}
 
@@ -120,6 +178,7 @@ func AddCommand(prefix string, funArray ...Function) {
 		if funArray[j].Disable {
 			continue
 		}
+
 		for i := range funArray[j].Rules {
 			if strings.Contains(funArray[j].Rules[i], "raw ") {
 				funArray[j].Rules[i] = strings.Replace(funArray[j].Rules[i], "raw ", "", -1)
@@ -138,27 +197,6 @@ func AddCommand(prefix string, funArray ...Function) {
 			funArray[j].Rules[i] = strings.Replace(funArray[j].Rules[i], " ", `\s+`, -1)
 			funArray[j].Rules[i] = strings.Replace(funArray[j].Rules[i], "?", `(\S+)`, -1)
 			funArray[j].Rules[i] = "^" + funArray[j].Rules[i] + "$"
-		}
-		{
-			lf := len(functions)
-			for i := range functions {
-				f := lf - i - 1
-				if functions[f].Priority > funArray[j].Priority {
-					functions = append(functions[:f+1], append([]Function{funArray[j]}, functions[f+1:]...)...)
-					break
-				}
-			}
-			if len(functions) == lf {
-				if lf > 0 {
-					if functions[0].Priority < funArray[j].Priority && functions[lf-1].Priority < funArray[j].Priority {
-						functions = append([]Function{funArray[j]}, functions...)
-					} else {
-						functions = append(functions, funArray[j])
-					}
-				} else {
-					functions = append(functions, funArray[j])
-				}
-			}
 		}
 
 		if funArray[j].Cron != "" {
