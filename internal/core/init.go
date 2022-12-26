@@ -12,7 +12,7 @@ func Init() {
 	initWeb()
 	initToHandleMessage()
 
-	AddCommand("", Function{
+	NewPlugin(Function{
 		Rules: []string{"hello"},
 		Admin: true,
 		Handle: func(s Sender) interface{} {

@@ -46,7 +46,7 @@ type Filter struct {
 var functions Functions
 
 // Functions 将[]string定义为MyStringList类型
-type Functions []Function
+type Functions []*Function
 
 // Len 实现sort.Interface接口的获取元素数量方法
 func (m Functions) Len() int {
@@ -69,33 +69,33 @@ func getPlugins() Functions {
 	})
 }
 
-func getModules() []Function {
+func getModules() Functions {
 	return getFunctions(func(d Function) bool {
 		return d.Module
 	})
 }
 
-func getRules() []Function {
+func getRules() Functions {
 	return getFunctions(func(d Function) bool {
 		return d.Rules != nil
 	})
 }
-func getCron() []Function {
+func getCron() Functions {
 	return getFunctions(func(d Function) bool {
 		return len(d.Cron) > 0
 	})
 }
-func getServers() []Function {
+func getServers() Functions {
 	return getFunctions(func(d Function) bool {
 		return d.OnStart
 	})
 }
 
-func getFunctions(f func(d Function) bool) []Function {
+func getFunctions(f func(d Function) bool) []*Function {
 	sort.Sort(functions)
-	var data []Function
+	var data []*Function
 	for _, function := range functions {
-		if f(function) {
+		if f(*function) {
 			data = append(data, function)
 		}
 	}
@@ -108,9 +108,16 @@ func createPlugins() {
 		functions = append(functions, createPlugin(string(v)))
 		return nil
 	})
+
+	AddCommand("", functions...)
 }
 
-func createPlugin(str string) Function {
+func NewPlugin(f Function) {
+	functions = append(functions, &f)
+	AddCommand("", &f)
+}
+
+func createPlugin(str string) *Function {
 	reg := "/\\*(.|\\r\\n|\\n)*?\\*/"
 	if res := regexp.MustCompile(reg).FindStringSubmatch(str); len(res) != 0 {
 		data := res[0]
@@ -120,7 +127,7 @@ func createPlugin(str string) Function {
 			rules = append(rules, strings.Trim(res[1], " "))
 		}
 
-		return Function{
+		return &Function{
 			Rules:       rules,
 			Author:      getString("author", data),
 			Origin:      getString("origin", data),
@@ -138,11 +145,12 @@ func createPlugin(str string) Function {
 			Disable:     getBool("disable", data),
 			Module:      getBool("module", data),
 			OnStart:     getBool("on_start", data),
+			Content:     str,
 			FindAll:     true,
 		}
 
 	}
-	return Function{
+	return &Function{
 		Content: str,
 		FindAll: true,
 	}
@@ -173,35 +181,20 @@ func getBool(key, data string) bool {
 	return r
 }
 
-func AddCommand(prefix string, funArray ...Function) {
+func AddCommand(prefix string, funArray ...*Function) {
 	for j := range funArray {
-		if funArray[j].Disable {
+
+		fun := funArray[j]
+
+		if fun.Disable {
 			continue
 		}
 
-		for i := range funArray[j].Rules {
-			if strings.Contains(funArray[j].Rules[i], "raw ") {
-				funArray[j].Rules[i] = strings.Replace(funArray[j].Rules[i], "raw ", "", -1)
-				continue
-			}
-			funArray[j].Rules[i] = strings.ReplaceAll(funArray[j].Rules[i], `\r\a\w`, "raw")
-			if strings.Contains(funArray[j].Rules[i], "$") {
-				continue
-			}
-			if prefix != "" {
-				funArray[j].Rules[i] = prefix + `\s+` + funArray[j].Rules[i]
-			}
-			funArray[j].Rules[i] = strings.Replace(funArray[j].Rules[i], "(", `[(]`, -1)
-			funArray[j].Rules[i] = strings.Replace(funArray[j].Rules[i], ")", `[)]`, -1)
-			funArray[j].Rules[i] = regexp.MustCompile(`\?$`).ReplaceAllString(funArray[j].Rules[i], `([\s\S]+)`)
-			funArray[j].Rules[i] = strings.Replace(funArray[j].Rules[i], " ", `\s+`, -1)
-			funArray[j].Rules[i] = strings.Replace(funArray[j].Rules[i], "?", `(\S+)`, -1)
-			funArray[j].Rules[i] = "^" + funArray[j].Rules[i] + "$"
-		}
+		addRules(prefix, fun)
 
-		if funArray[j].Cron != "" {
-			cmd := funArray[j]
-			if _, err := C.AddFunc(funArray[j].Cron, func() {
+		if fun.Cron != "" {
+			cmd := fun
+			if _, err := C.AddFunc(fun.Cron, func() {
 				cmd.Handle(&Faker{})
 			}); err != nil {
 
@@ -210,6 +203,42 @@ func AddCommand(prefix string, funArray ...Function) {
 			}
 		}
 	}
+}
+
+func addRules(prefix string, function *Function) {
+
+	rules := function.Rules
+
+	if len(rules) > 0 {
+		for i := range rules {
+			if strings.Contains(rules[i], "raw ") {
+				rules[i] = strings.Replace(rules[i], "raw ", "", -1)
+				continue
+			}
+			rules[i] = strings.ReplaceAll(rules[i], `\r\a\w`, "raw")
+			if strings.Contains(rules[i], "$") {
+				continue
+			}
+			if prefix != "" {
+				rules[i] = prefix + `\s+` + rules[i]
+			}
+			rules[i] = strings.Replace(rules[i], "(", `[(]`, -1)
+			rules[i] = strings.Replace(rules[i], ")", `[)]`, -1)
+			rules[i] = regexp.MustCompile(`\?$`).ReplaceAllString(rules[i], `([\s\S]+)`)
+			rules[i] = strings.Replace(rules[i], " ", `\s+`, -1)
+			rules[i] = strings.Replace(rules[i], "?", `(\S+)`, -1)
+			rules[i] = "^" + rules[i] + "$"
+		}
+		f := function.Handle
+		if f == nil {
+			function.Handle = func(s Sender) interface{} {
+				logs.Printf(function.Content)
+				return "nil"
+			}
+		}
+
+	}
+
 }
 
 func parseFunction(sender Sender) {
@@ -229,7 +258,7 @@ func parseFunction(sender Sender) {
 						tmp = append(tmp, res[i][1:])
 					}
 					if !function.Hidden {
-						logs.Info("匹配到规则：%s", rule)
+						logs.Info("1:匹配到规则：%s", rule)
 					}
 					sender.SetAllMatch(tmp)
 					matched = true
@@ -237,18 +266,18 @@ func parseFunction(sender Sender) {
 			} else {
 				if res := regexp.MustCompile(rule).FindStringSubmatch(content); len(res) > 0 {
 					if !function.Hidden {
-						logs.Info("匹配到规则：%s", rule)
+						logs.Info("2:匹配到规则：%s", rule)
 					}
 					sender.SetMatch(res[1:])
 					matched = true
 				}
 			}
 			if matched {
-				if function.Admin && !sender.IsAdmin() {
-					sender.Delete()
-					sender.Disappear()
-					return
-				}
+				//if function.Admin && !sender.IsAdmin() {
+				//	sender.Delete()
+				//	sender.Disappear()
+				//	return
+				//}
 				rt := function.Handle(sender)
 				if rt != nil {
 					sender.Reply(rt)
