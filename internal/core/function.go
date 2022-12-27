@@ -18,7 +18,7 @@ type Function struct {
 	UserId  *Filter
 	GroupId *Filter
 	FindAll bool
-	Handle  func(s Sender) interface{} `json:"-"`
+	Handle  func(s jsvm.Sender) interface{} `json:"-"`
 	Show    string
 	Hidden  bool
 
@@ -203,7 +203,7 @@ func AddCommand(prefix string, funArray ...*Function) {
 		if fun.Cron != "" {
 			cmd := fun
 			if _, err := C.AddFunc(fun.Cron, func() {
-				cmd.Handle(&Faker{})
+				cmd.Handle(&jsvm.Faker{})
 			}); err != nil {
 
 			} else {
@@ -239,10 +239,10 @@ func addRules(prefix string, function *Function) {
 		}
 		f := function.Handle
 		if f == nil {
-			function.Handle = func(s Sender) interface{} {
+			function.Handle = func(s jsvm.Sender) interface{} {
 				//加载与运行脚本
 				str := function.Content
-				_, err := runScript(str)
+				_, err := runScript(s, str)
 				if err != nil {
 					logs.Error(err)
 				}
@@ -255,12 +255,12 @@ func addRules(prefix string, function *Function) {
 }
 
 // 解析执行插件消息
-func parseFunction(sender Sender) {
+func parseFunction(sender jsvm.Sender) {
 	ct := sender.GetContent()
 	content := TrimHiddenCharacter(ct)
 
 	for _, function := range functions {
-		if black(function.ImType, sender.GetImType()) || black(function.UserId, sender.GetUserID()) || black(function.GroupId, fmt.Sprint(sender.GetChatID())) {
+		if black(function.ImType, sender.GetImType()) || black(function.UserId, sender.GetUserId()) || black(function.GroupId, fmt.Sprint(sender.GetChatId())) {
 			continue
 		}
 		for _, rule := range function.Rules {

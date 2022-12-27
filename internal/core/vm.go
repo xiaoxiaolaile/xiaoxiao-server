@@ -9,8 +9,13 @@ import (
 )
 
 // 运行js脚本
-func runScript(str string) (goja.Value, error) {
+func runScript(s jsvm.Sender, str string) (goja.Value, error) {
 	vm := newVm()
+	_ = vm.Set("s", s)
+	_ = vm.Set("sender", s)
+	vm.Set("image", func(url string) interface{} {
+		return `[CQ:image,file=` + url + `]`
+	})
 
 	reStr := `require\(['"](.*)['"]\)`
 	re := regexp.MustCompile(reStr)

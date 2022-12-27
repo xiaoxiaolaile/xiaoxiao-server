@@ -4,9 +4,10 @@ import (
 	"fmt"
 	logs "github.com/sirupsen/logrus"
 	"strings"
+	"xiaoxiao/internal/jsvm"
 )
 
-var Senders chan Sender
+var Senders chan jsvm.Sender
 
 var isTerminal bool
 
@@ -20,7 +21,7 @@ func SetTerminal(b bool) {
 
 func initToHandleMessage() {
 	//reply := BoltBucket("reply")
-	Senders = make(chan Sender)
+	Senders = make(chan jsvm.Sender)
 	go func() {
 		for {
 			s := <-Senders
@@ -46,7 +47,7 @@ func TrimHiddenCharacter(originStr string) string {
 }
 
 // HandleMessage 处理接受到的消息
-func HandleMessage(sender Sender) {
+func HandleMessage(sender jsvm.Sender) {
 	defer func() {
 		recover()
 	}()
@@ -61,7 +62,7 @@ func HandleMessage(sender Sender) {
 			}
 		}
 	}()
-	u, g, i := fmt.Sprint(sender.GetUserID()), fmt.Sprint(sender.GetChatID()), fmt.Sprint(sender.GetImType())
+	u, g, i := fmt.Sprint(sender.GetUserId()), fmt.Sprint(sender.GetChatId()), fmt.Sprint(sender.GetImType())
 
 	if isTerminal {
 		logs.Printf("接收到消息 %v/%v@%v：%s", i, u, g, content)

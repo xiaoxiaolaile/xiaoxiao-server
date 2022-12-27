@@ -1,4 +1,4 @@
-package core
+package jsvm
 
 import (
 	"errors"
@@ -8,20 +8,19 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"xiaoxiao/internal/jsvm"
 	//"github.com/Han-Ya-Jun/qrcode2console"
 )
 
 type Sender interface {
-	GetUserID() string
-	GetChatID() int
+	GetUserId() string
+	GetChatId() int
 	GetImType() string
-	GetMessageID() string
+	GetMessageId() string
 	RecallMessage(...interface{}) error
-	GetUsername() string
-	GetChatname() string
+	GetUserName() string
+	GetChatName() string
 	IsReply() bool
-	GetReplySenderUserID() int
+	GetReplySenderUserId() int
 	GetRawMessage() interface{}
 	SetMatch([]string)
 	SetAllMatch([][]string)
@@ -47,6 +46,8 @@ type Sender interface {
 	UAtLast()
 	IsAtLast() bool
 	MessagesToSend() string
+	Param(string) string
+	GetPlatform() string
 }
 
 type Edit int
@@ -67,8 +68,8 @@ type VideoUrl string
 type Faker struct {
 	Message string
 	Type    string
-	UserID  string
-	ChatID  int
+	UserId  string
+	ChatId  int
 	Carry   chan string
 	BaseSender
 	Admin bool
@@ -85,12 +86,19 @@ func (sender *Faker) GetContent() string {
 	return sender.Message
 }
 
-func (sender *Faker) GetUserID() string {
-	return sender.UserID
+func (sender *Faker) GetUserId() string {
+	return sender.UserId
 }
 
-func (sender *Faker) GetChatID() int {
-	return sender.ChatID
+func (sender *Faker) GetChatId() int {
+	return sender.ChatId
+}
+
+func (sender *Faker) GetPlatform() string {
+	if sender.Type == "" {
+		return "fake"
+	}
+	return sender.Type
 }
 
 func (sender *Faker) GetImType() string {
@@ -100,15 +108,15 @@ func (sender *Faker) GetImType() string {
 	return sender.Type
 }
 
-func (sender *Faker) GetMessageID() string {
+func (sender *Faker) GetMessageId() string {
 	return ""
 }
 
-func (sender *Faker) GetUsername() string {
+func (sender *Faker) GetUserName() string {
 	return ""
 }
 
-func (sender *Faker) GetChatname() string {
+func (sender *Faker) GetChatName() string {
 	return ""
 }
 
@@ -116,7 +124,7 @@ func (sender *Faker) IsReply() bool {
 	return false
 }
 
-func (sender *Faker) GetReplySenderUserID() int {
+func (sender *Faker) GetReplySenderUserId() int {
 	return 0
 }
 
@@ -281,7 +289,7 @@ func (sender *BaseSender) IsReply() bool {
 	return false
 }
 
-func (sender *BaseSender) GetMessageID() string {
+func (sender *BaseSender) GetMessageId() string {
 	return ""
 }
 
@@ -289,13 +297,17 @@ func (sender *BaseSender) RecallMessage(...interface{}) error {
 	return nil
 }
 
-func (sender *BaseSender) GetUserID() string {
+func (sender *BaseSender) GetUserId() string {
 	return ""
 }
-func (sender *BaseSender) GetChatID() int {
+func (sender *BaseSender) GetChatId() int {
 	return 0
 }
 func (sender *BaseSender) GetImType() string {
+	return ""
+}
+
+func (sender *BaseSender) GetPlatform() string {
 	return ""
 }
 
@@ -307,7 +319,7 @@ func (sender *BaseSender) GroupBan(uid string, duration int) {
 
 }
 
-func (sender *BaseSender) GetUsername() string {
+func (sender *BaseSender) GetUserName() string {
 	return ""
 }
 
@@ -315,11 +327,11 @@ func (sender *BaseSender) IsAdmin() bool {
 	return false
 }
 
-func (sender *BaseSender) GetChatname() string {
+func (sender *BaseSender) GetChatName() string {
 	return ""
 }
 
-func (sender *BaseSender) GetReplySenderUserID() int {
+func (sender *BaseSender) GetReplySenderUserId() int {
 	return 0
 }
 
@@ -337,6 +349,9 @@ func (sender *BaseSender) IsAtLast() bool {
 
 func (sender *BaseSender) MessagesToSend() string {
 	return strings.Join(sender.ToSendMessages, "\n")
+}
+func (sender *BaseSender) Param(key string) string {
+	return sender.Get(0)
 }
 
 var TimeOutError = errors.New("指令超时")
@@ -405,7 +420,7 @@ func (_ *BaseSender) Await(sender Sender, callback func(Sender) interface{}, par
 	c.Chan = make(chan interface{}, 1)
 	c.Result = make(chan interface{}, 1)
 
-	key := fmt.Sprintf("u=%v&c=%v&i=%v&t=%v", sender.GetUserID(), sender.GetChatID(), sender.GetImType(), time.Now().UnixNano())
+	key := fmt.Sprintf("u=%v&c=%v&i=%v&t=%v", sender.GetUserId(), sender.GetChatId(), sender.GetImType(), time.Now().UnixNano())
 	if fg != nil {
 		key += fmt.Sprintf("&f=true")
 	}
@@ -450,7 +465,7 @@ func (_ *BaseSender) Await(sender Sender, callback func(Sender) interface{}, par
 					c.Result <- fmt.Sprintf("请从%s中选择一个。", strings.Join(vv, "、"))
 				} else if vv, ok := result.(Range); ok {
 					ct := s.GetContent()
-					n := jsvm.Int(ct)
+					n := Int(ct)
 					if fmt.Sprint(n) == ct {
 						if (n >= vv[0]) && (n <= vv[1]) {
 

@@ -34,7 +34,7 @@ func main() {
 			scanner := bufio.NewScanner(os.Stdin)
 			for scanner.Scan() {
 				data := scanner.Text()
-				f := &core.Faker{
+				f := &jsvm.Faker{
 					Type:    "terminal",
 					Message: data,
 					Admin:   true,
