@@ -4,13 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dop251/goja"
-	"github.com/dop251/goja/parser"
-	"github.com/dop251/goja_nodejs/console"
-	"github.com/dop251/goja_nodejs/require"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
-	"reflect"
 	"strings"
 )
 
@@ -22,62 +18,13 @@ func ServerRun(add ...string) {
 
 func initWeb() {
 
-	scriptStr := `
-	/**
-	* @author 猫咪
-	* @origin 傻妞官方
-	* @create_at 2022-09-10 07:35:00
-	* @description 🐮网络开发demo，基础操作演示，能懂多少看悟性。
-	* @version v1.0.1
-	* @title 网络开发教程
-	* @on_start true
-	* @icon https://www.expressjs.com.cn/images/favicon.png
-	* @public false
-	*/
-	
-	const app = require("express")
-	
-	//客户查询ip地址
-	app.get("/myip", (req, res) => {
-		console.log("hello")
-	   res.json({
-	       data: {
-	           ip: req.ip(),
-	       },
-	       success: true,
-	   })
-	});
-	`
+	var scripts []string
 
-	scriptStr2 := `
-	/**
-	* @author 猫咪
-	* @origin 测试下
-	* @create_at 2022-09-10 07:35:00
-	* @description 🐮网络开发demo，基础操作演示，能懂多少看悟性。
-	* @version v1.0.1
-	* @title 网络开发教程
-	* @on_start true
-	* @icon https://www.expressjs.com.cn/images/favicon.png
-	* @public false
-	*/
-	
-	const app = require("express")
-	
-	//客户查询ip地址
-	app.get("/hello", (req, res) => {
-	   res.json({
-	       data: {
-	           ip: "hello => " + req.ip(),
-	       },
-	       success: true,
-	   })
-	});
-	`
-
-	createPlugins()
-
-	keyMap := initServerPlugin(scriptStr, scriptStr2)
+	servers := getServers()
+	for _, function := range servers {
+		scripts = append(scripts, function.Content)
+	}
+	keyMap := initServerPlugin(scripts...)
 
 	server.GET("/list", func(c *gin.Context) {
 		c.JSON(200, getPlugins())
@@ -108,60 +55,6 @@ func initWeb() {
 			c.JSON(http.StatusOK, "页面不存在")
 		}
 	})
-}
-
-/*
-*
-初始化server插件
-*/
-func initServerPlugin(scripts ...string) map[string]*WebService {
-	keyMap := make(map[string]*WebService)
-	for _, script := range scripts {
-		vm := newVm()
-		require.RegisterNativeModule("express", func(runtime *goja.Runtime, module *goja.Object) {
-			o := module.Get("exports").(*goja.Object)
-			for _, m := range []string{"get", "post", "delete", "put"} {
-				mm := m
-				_ = o.Set(mm, func(relativePath string, handle func(*goja.Object, *goja.Object)) {
-					key := mm + "-" + relativePath
-					keyMap[key] = newWebService(vm, handle)
-				})
-			}
-		})
-		_, err := vm.RunString(script)
-		if err != nil {
-			//c.String(http.StatusBadGateway, err.Error())
-			fmt.Println(err)
-			//return
-		}
-	}
-	return keyMap
-}
-
-type myFieldNameMapper struct{}
-
-func (tfm myFieldNameMapper) FieldName(_ reflect.Type, f reflect.StructField) string {
-	tag := f.Tag.Get(`json`)
-	if idx := strings.IndexByte(tag, ','); idx != -1 {
-		tag = tag[:idx]
-	}
-	if parser.IsIdentifier(tag) {
-		return tag
-	}
-	return f.Name //uncapitalize()
-}
-
-func (tfm myFieldNameMapper) MethodName(_ reflect.Type, m reflect.Method) string {
-	return m.Name //uncapitalize(m.Name)
-}
-
-func newVm() *goja.Runtime {
-	vm := goja.New()
-	vm.SetFieldNameMapper(myFieldNameMapper{})
-	registry := new(require.Registry) // this can be shared by multiple runtimes
-	registry.Enable(vm)
-	console.Enable(vm)
-	return vm
 }
 
 func init() {

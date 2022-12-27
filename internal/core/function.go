@@ -2,6 +2,8 @@ package core
 
 import (
 	"fmt"
+	"github.com/dop251/goja"
+	"github.com/dop251/goja_nodejs/require"
 	logs "github.com/sirupsen/logrus"
 	"regexp"
 	"sort"
@@ -102,7 +104,8 @@ func getFunctions(f func(d Function) bool) []*Function {
 	return data
 }
 
-func createPlugins() {
+// 数据库加载插件
+func initPlugins() {
 	db := BoltBucket("plugins")
 	db.Foreach(func(k, v []byte) error {
 		functions = append(functions, createPlugin(string(v)))
@@ -112,11 +115,13 @@ func createPlugins() {
 	AddCommand("", functions...)
 }
 
+// NewPlugin 新建一个插件
 func NewPlugin(f Function) {
 	functions = append(functions, &f)
 	AddCommand("", &f)
 }
 
+// 解析生成一个插件
 func createPlugin(str string) *Function {
 	reg := "/\\*(.|\\r\\n|\\n)*?\\*/"
 	if res := regexp.MustCompile(reg).FindStringSubmatch(str); len(res) != 0 {
@@ -156,6 +161,7 @@ func createPlugin(str string) *Function {
 	}
 }
 
+// 获取插件中的自定义信息
 func getString(key, data string) string {
 	r := ""
 	for _, res := range regexp.MustCompile("@"+key+`\s+(.+)`).FindAllStringSubmatch(data, -1) {
@@ -164,6 +170,7 @@ func getString(key, data string) string {
 	return r
 }
 
+// 获取插件中的自定义信息
 func getInt(key, data string) int {
 	r := 0
 	for _, res := range regexp.MustCompile("@"+key+`\s+(.+)`).FindAllStringSubmatch(data, -1) {
@@ -173,6 +180,7 @@ func getInt(key, data string) int {
 	return r
 }
 
+// 获取插件中的自定义信息
 func getBool(key, data string) bool {
 	r := false
 	for _, res := range regexp.MustCompile("@"+key+`\s+(.+)`).FindAllStringSubmatch(data, -1) {
@@ -181,6 +189,7 @@ func getBool(key, data string) bool {
 	return r
 }
 
+// AddCommand 添加插件命令
 func AddCommand(prefix string, funArray ...*Function) {
 	for j := range funArray {
 
@@ -189,9 +198,7 @@ func AddCommand(prefix string, funArray ...*Function) {
 		if fun.Disable {
 			continue
 		}
-
 		addRules(prefix, fun)
-
 		if fun.Cron != "" {
 			cmd := fun
 			if _, err := C.AddFunc(fun.Cron, func() {
@@ -232,8 +239,10 @@ func addRules(prefix string, function *Function) {
 		f := function.Handle
 		if f == nil {
 			function.Handle = func(s Sender) interface{} {
-				logs.Printf(function.Content)
-				return "nil"
+				//加载与运行脚本
+				str := function.Content
+				_, _ = runScript(str)
+				return nil
 			}
 		}
 
@@ -241,6 +250,7 @@ func addRules(prefix string, function *Function) {
 
 }
 
+// 解析执行插件消息
 func parseFunction(sender Sender) {
 	ct := sender.GetContent()
 	content := TrimHiddenCharacter(ct)
@@ -295,4 +305,32 @@ func parseFunction(sender Sender) {
 		}
 	next:
 	}
+}
+
+/*
+*
+初始化server插件
+*/
+func initServerPlugin(scripts ...string) map[string]*WebService {
+	keyMap := make(map[string]*WebService)
+	for _, script := range scripts {
+		vm := newVm()
+		require.RegisterNativeModule("express", func(runtime *goja.Runtime, module *goja.Object) {
+			o := module.Get("exports").(*goja.Object)
+			for _, m := range []string{"get", "post", "delete", "put"} {
+				mm := m
+				_ = o.Set(mm, func(relativePath string, handle func(*goja.Object, *goja.Object)) {
+					key := mm + "-" + relativePath
+					keyMap[key] = newWebService(vm, handle)
+				})
+			}
+		})
+		_, err := vm.RunString(script)
+		if err != nil {
+			//c.String(http.StatusBadGateway, err.Error())
+			fmt.Println(err)
+			//return
+		}
+	}
+	return keyMap
 }

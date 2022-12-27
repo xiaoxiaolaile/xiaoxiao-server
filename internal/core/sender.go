@@ -45,6 +45,7 @@ func TrimHiddenCharacter(originStr string) string {
 	return strings.ReplaceAll(string(dstRunes), "￼", "")
 }
 
+// HandleMessage 处理接受到的消息
 func HandleMessage(sender Sender) {
 	defer func() {
 		recover()

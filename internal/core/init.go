@@ -9,6 +9,7 @@ func Init() {
 	initTimeLoc()
 	initLog()
 	InitStore()
+	initPlugins()
 	initWeb()
 	initToHandleMessage()
 
