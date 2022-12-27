@@ -1,11 +1,10 @@
-package runtime
+package jsvm
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
-	"strconv"
 	"strings"
 
 	"github.com/boltdb/bolt"
@@ -178,11 +177,6 @@ func (bucket BoltBucket) Foreach(f func(k, v []byte) error) {
 	for i := range bs {
 		_ = f(bs[i][0], bs[i][1])
 	}
-}
-
-var Int = func(s interface{}) int {
-	i, _ := strconv.Atoi(fmt.Sprint(s))
-	return i
 }
 
 func (bucket BoltBucket) Create(i interface{}) error {

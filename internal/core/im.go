@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"xiaoxiao/internal/runtime"
+	"xiaoxiao/internal/jsvm"
 	//"github.com/Han-Ya-Jun/qrcode2console"
 )
 
@@ -450,7 +450,7 @@ func (_ *BaseSender) Await(sender Sender, callback func(Sender) interface{}, par
 					c.Result <- fmt.Sprintf("请从%s中选择一个。", strings.Join(vv, "、"))
 				} else if vv, ok := result.(Range); ok {
 					ct := s.GetContent()
-					n := runtime.Int(ct)
+					n := jsvm.Int(ct)
 					if fmt.Sprint(n) == ct {
 						if (n >= vv[0]) && (n <= vv[1]) {
 

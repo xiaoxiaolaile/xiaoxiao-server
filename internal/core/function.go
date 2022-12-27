@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"xiaoxiao/internal/runtime"
+	"xiaoxiao/internal/jsvm"
 )
 
 type Function struct {
@@ -107,7 +107,7 @@ func getFunctions(f func(d Function) bool) []*Function {
 
 // 数据库加载插件
 func initPlugins() {
-	db := runtime.BoltBucket("plugins")
+	db := jsvm.BoltBucket("plugins")
 	db.Foreach(func(k, v []byte) error {
 		functions = append(functions, createPlugin(string(v)))
 		return nil
@@ -315,8 +315,8 @@ func parseFunction(sender Sender) {
 *
 初始化server插件
 */
-func initServerPlugin(scripts ...string) map[string]*WebService {
-	keyMap := make(map[string]*WebService)
+func initServerPlugin(scripts ...string) map[string]*jsvm.WebService {
+	keyMap := make(map[string]*jsvm.WebService)
 	for _, script := range scripts {
 		vm := newVm()
 		require.RegisterNativeModule("express", func(runtime *goja.Runtime, module *goja.Object) {
@@ -325,7 +325,7 @@ func initServerPlugin(scripts ...string) map[string]*WebService {
 				mm := m
 				_ = o.Set(mm, func(relativePath string, handle func(*goja.Object, *goja.Object)) {
 					key := mm + "-" + relativePath
-					keyMap[key] = newWebService(vm, handle)
+					keyMap[key] = jsvm.NewWebService(vm, handle)
 				})
 			}
 		})

@@ -5,12 +5,12 @@ import (
 	logs "github.com/sirupsen/logrus"
 	"os"
 	"xiaoxiao/internal/core"
-	"xiaoxiao/internal/runtime"
+	"xiaoxiao/internal/jsvm"
 )
 
 func main() {
 	core.Init()
-	sillyGirl := runtime.BoltBucket("sillyGirl")
+	sillyGirl := jsvm.BoltBucket("sillyGirl")
 	port := sillyGirl.GetString("port", "8080")
 	logs.Printf("Http服务已运行(%s)。", port)
 	go core.ServerRun("0.0.0.0:" + port)

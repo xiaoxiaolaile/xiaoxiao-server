@@ -1,4 +1,4 @@
-package runtime
+package jsvm
 
 import logs "github.com/sirupsen/logrus"
 

@@ -1,4 +1,4 @@
-package runtime
+package jsvm
 
 type BucketJs struct {
 	Bucket BoltBucket

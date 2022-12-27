@@ -3,13 +3,13 @@ package core
 import (
 	logs "github.com/sirupsen/logrus"
 	"time"
-	"xiaoxiao/internal/runtime"
+	"xiaoxiao/internal/jsvm"
 )
 
 func Init() {
 	initTimeLoc()
 	initLog()
-	runtime.InitStore()
+	jsvm.InitStore()
 	initPlugins()
 	initWeb()
 	initToHandleMessage()
