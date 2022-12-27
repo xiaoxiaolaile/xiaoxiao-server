@@ -2,7 +2,6 @@ package core
 
 import (
 	"github.com/dop251/goja"
-	"github.com/dop251/goja_nodejs/console"
 	"github.com/dop251/goja_nodejs/require"
 	"regexp"
 	"strings"
@@ -30,6 +29,7 @@ func newVm() *goja.Runtime {
 	vm := goja.New()
 	//vm.SetFieldNameMapper(myFieldNameMapper{})
 	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
+	loadConsole(vm)
 	loadModules(vm)
 	loadBucket(vm)
 	loadTime(vm)
@@ -66,10 +66,14 @@ func loadModules(vm *goja.Runtime) {
 	}
 	r := require.NewRegistry(require.WithLoader(mapFileSystemSourceLoader(m)))
 	r.Enable(vm)
-	console.Enable(vm)
+
 }
 
 // 加载时间方法
 func loadTime(vm *goja.Runtime) {
 	_ = vm.Set("time", runtime2.Time{})
+}
+
+func loadConsole(vm *goja.Runtime) {
+	_ = vm.Set("console", runtime2.Console{})
 }
