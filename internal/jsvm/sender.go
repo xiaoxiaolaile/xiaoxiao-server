@@ -3,6 +3,7 @@ package jsvm
 import (
 	"errors"
 	"fmt"
+	logs "github.com/sirupsen/logrus"
 	"reflect"
 	"regexp"
 	"strings"
@@ -75,8 +76,53 @@ type Faker struct {
 	Admin bool
 }
 
-func (sender *Faker) Listen() chan string {
-	return sender.Carry
+type ResSender struct {
+	context string
+}
+
+func (r *ResSender) GetContent() string {
+	return r.context
+}
+
+func (sender *Faker) Listen(data int64) *ResSender {
+	key := fmt.Sprintf("u=%v&c=%v&i=%v&t=%v", sender.GetUserId(), sender.GetChatId(), sender.GetImType(), time.Now().UnixNano())
+	timeout := time.Millisecond * time.Duration(data)
+	//if fg != nil {
+	//	if *fg == "me" {
+	//		key += fmt.Sprintf("&f=me")
+	//	} else {
+	//		key += fmt.Sprintf("&f=true")
+	//	}
+	//}
+	c := &Carry{Sender: sender}
+
+	if c.Pattern == "" {
+		c.Pattern = `[\s\S]*`
+	}
+
+	c.Chan = make(chan interface{}, 1)
+	c.Result = make(chan interface{}, 1)
+
+	if oc, ok := waits.LoadOrStore(key, c); ok {
+		oc.(*Carry).Chan <- InterruptError
+	}
+	defer func() {
+		waits.Delete(key)
+	}()
+
+	for {
+		select {
+		case result := <-c.Chan:
+			logs.Info(result)
+			switch result.(type) {
+			case string:
+				return &ResSender{context: result.(string)}
+			}
+		case <-time.After(timeout):
+			return nil
+		}
+	}
+
 }
 
 func (sender *Faker) GetContent() string {
@@ -358,6 +404,10 @@ var TimeOutError = errors.New("指令超时")
 var InterruptError = errors.New("被其他指令中断")
 
 var waits sync.Map
+
+func WaitsRange(f func(key, value any) bool) {
+	waits.Range(f)
+}
 
 type Carry struct {
 	Chan    chan interface{}
