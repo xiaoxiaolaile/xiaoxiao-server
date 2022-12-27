@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"xiaoxiao/internal/runtime"
 )
 
 type Function struct {
@@ -106,7 +107,7 @@ func getFunctions(f func(d Function) bool) []*Function {
 
 // 数据库加载插件
 func initPlugins() {
-	db := BoltBucket("plugins")
+	db := runtime.BoltBucket("plugins")
 	db.Foreach(func(k, v []byte) error {
 		functions = append(functions, createPlugin(string(v)))
 		return nil

@@ -6,7 +6,7 @@ import (
 	logs "github.com/sirupsen/logrus"
 	"reflect"
 	"strings"
-	"xiaoxiao/internal/core"
+	"xiaoxiao/internal/runtime"
 )
 
 func init() {
@@ -36,7 +36,7 @@ func (tfm myFieldNameMapper) MethodName(_ reflect.Type, m reflect.Method) string
 }
 
 func main() {
-	core.InitStore()
+	runtime.InitStore()
 	vm := goja.New()
 	vm.SetFieldNameMapper(myFieldNameMapper{})
 	_ = vm.Set("console", _console)
@@ -85,7 +85,7 @@ type BucketJs struct {
 
 func createBucket(name string) *BucketJs {
 	//fmt.Println("name => ", name)
-	bucket := core.BoltBucket(name)
+	bucket := runtime.BoltBucket(name)
 	return &BucketJs{
 		Get: func(key, defaultValue string) string {
 			v := bucket.GetString(key)

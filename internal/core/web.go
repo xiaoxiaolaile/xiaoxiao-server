@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"xiaoxiao/internal/runtime"
 )
 
 var server *gin.Engine
@@ -160,7 +161,7 @@ func (s *WebService) getRes(c *gin.Context) *goja.Object {
 				case string:
 					b = i
 				default:
-					a = Int(i)
+					a = runtime.Int(i)
 				}
 			}
 			c.Redirect(a, b)

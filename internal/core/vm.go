@@ -6,7 +6,7 @@ import (
 	"github.com/dop251/goja_nodejs/require"
 	"regexp"
 	"strings"
-	"xiaoxiao/internal/core/runtime"
+	runtime2 "xiaoxiao/internal/runtime"
 )
 
 // 运行js脚本
@@ -51,8 +51,8 @@ func loadBucket(vm *goja.Runtime) {
 	_ = vm.Set("Bucket", func(call goja.ConstructorCall) *goja.Object {
 		name := call.Argument(0).ToString().String()
 		//fmt.Println("test =>", name)
-		return vm.ToValue(runtime.BucketJs{
-			Bucket: BoltBucket(name),
+		return vm.ToValue(runtime2.BucketJs{
+			Bucket: runtime2.BoltBucket(name),
 		}).(*goja.Object)
 	})
 }
@@ -71,5 +71,5 @@ func loadModules(vm *goja.Runtime) {
 
 // 加载时间方法
 func loadTime(vm *goja.Runtime) {
-	_ = vm.Set("time", runtime.Time{})
+	_ = vm.Set("time", runtime2.Time{})
 }

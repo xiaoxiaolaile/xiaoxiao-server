@@ -3,12 +3,13 @@ package core
 import (
 	logs "github.com/sirupsen/logrus"
 	"time"
+	"xiaoxiao/internal/runtime"
 )
 
 func Init() {
 	initTimeLoc()
 	initLog()
-	InitStore()
+	runtime.InitStore()
 	initPlugins()
 	initWeb()
 	initToHandleMessage()

@@ -1,9 +1,7 @@
 package runtime
 
-import "xiaoxiao/internal/core"
-
 type BucketJs struct {
-	Bucket core.BoltBucket
+	Bucket BoltBucket
 }
 
 func (b *BucketJs) Get(key, defaultValue string) string {
