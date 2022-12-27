@@ -13,9 +13,10 @@ func runScript(s jsvm.Sender, str string) (goja.Value, error) {
 	vm := newVm()
 	_ = vm.Set("s", s)
 	_ = vm.Set("sender", s)
-	vm.Set("image", func(url string) interface{} {
+	_ = vm.Set("image", func(url string) interface{} {
 		return `[CQ:image,file=` + url + `]`
 	})
+	_ = vm.Set("request", jsvm.JsRequest)
 
 	reStr := `require\(['"](.*)['"]\)`
 	re := regexp.MustCompile(reStr)
