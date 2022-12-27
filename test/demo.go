@@ -16,8 +16,13 @@ func init() {
 }
 func main() {
 
+	s := testGoReflectMethod_O{
+		Test: "passed",
+	}
 	vm := goja.New()
+	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
 	_ = vm.Set("console", _console)
+	_ = vm.Set("s", s)
 	_, _ = vm.RunScript("hello.js", `
 
 	function test(a,  b) {
@@ -25,6 +30,7 @@ func main() {
 	}
 	test(1,2)
 	test(2,2)
+	console.log(s.test)
 `)
 	v, err := vm.RunString("2 + 2")
 	if err != nil {
@@ -34,6 +40,15 @@ func main() {
 		panic(num)
 	}
 
+}
+
+type testGoReflectMethod_O struct {
+	field string
+	Test  string
+}
+
+func (o testGoReflectMethod_O) Method(s string) string {
+	return o.field + s
 }
 
 var _console = map[string]func(...interface{}){

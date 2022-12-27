@@ -241,7 +241,10 @@ func addRules(prefix string, function *Function) {
 			function.Handle = func(s Sender) interface{} {
 				//加载与运行脚本
 				str := function.Content
-				_, _ = runScript(str)
+				_, err := runScript(str)
+				if err != nil {
+					logs.Error(err)
+				}
 				return nil
 			}
 		}
