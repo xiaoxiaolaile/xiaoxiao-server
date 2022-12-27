@@ -20,7 +20,7 @@ func JsRequest(wt interface{}, handles ...func(error, map[string]interface{}, in
 	//默认超时一分钟
 	client.SetTimeout(60 * time.Second)
 	defer client.RemoveProxy()
-	var method = "get"
+	var method = resty.MethodGet
 	var url = ""
 	var isJson bool
 	request := client.R()
