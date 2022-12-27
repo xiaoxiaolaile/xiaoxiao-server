@@ -6,20 +6,20 @@ type Console struct {
 }
 
 func (c *Console) Info(args ...interface{}) {
-	logs.Info(args)
+	logs.Info(args...)
 }
 func (c *Console) Debug(args ...interface{}) {
-	logs.Debug(args)
+	logs.Debug(args...)
 }
 func (c *Console) Warn(args ...interface{}) {
-	logs.Warn(args)
+	logs.Warn(args...)
 }
 func (c *Console) Error(args ...interface{}) {
-	logs.Error(args)
+	logs.Error(args...)
 }
-func (c *Console) Log(args ...interface{}) {
-	logs.Info(args)
+func (c *Console) Log(format string, args ...interface{}) {
+	c.LogF(format, args...)
 }
 func (c *Console) LogF(format string, args ...interface{}) {
-	logs.Printf(format, args)
+	logs.Printf(format, args...)
 }

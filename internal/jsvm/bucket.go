@@ -18,6 +18,10 @@ func (b *BucketJs) Get(key, defaultValue string) string {
 func (b *BucketJs) Set(key, value string) {
 	_ = b.Bucket.Set(key, value)
 }
+
+func (b *BucketJs) Delete(key string) {
+	_ = b.Bucket.Set(key, "")
+}
 func (b *BucketJs) Keys() []string {
 	var ss []string
 	b.Bucket.Foreach(func(k, _ []byte) error {
