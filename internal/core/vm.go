@@ -13,7 +13,7 @@ func runDefaultScript(s Sender, str string) (goja.Value, error) {
 }
 
 // 运行js脚本
-func runScript(vm *goja.Runtime, s Sender, str string) (goja.Value, error) {
+func runScript(vm *goja.Runtime, s Sender, str string) (value goja.Value, err error) {
 	_ = vm.Set("s", s)
 	_ = vm.Set("sender", s)
 	_ = vm.Set("image", func(url string) interface{} {
@@ -30,7 +30,8 @@ func runScript(vm *goja.Runtime, s Sender, str string) (goja.Value, error) {
 		}
 		return s
 	})
-	return vm.RunString(str)
+	value, err = vm.RunString(str)
+	return
 }
 
 // 创建一个js虚拟机
@@ -45,6 +46,7 @@ func newVm() *goja.Runtime {
 	loadTime(vm)
 	loadFmt(vm)
 	loadSillyGirl(vm)
+	loadStrings(vm)
 	return vm
 }
 
@@ -75,9 +77,7 @@ func loadSender(vm *goja.Runtime) {
 	_ = vm.Set("Sender", func(call goja.ConstructorCall) *goja.Object {
 		name := call.Argument(0).ToString().String()
 		//fmt.Println("test =>", name)
-		return vm.ToValue(SenderJs{
-			Name: name,
-		}).(*goja.Object)
+		return vm.ToValue(NewSenderJs(name)).(*goja.Object)
 	})
 }
 
@@ -110,4 +110,7 @@ func loadSillyGirl(vm *goja.Runtime) {
 		//fmt.Println("test =>", name)
 		return vm.ToValue(NewSillyGirl()).(*goja.Object)
 	})
+}
+func loadStrings(vm *goja.Runtime) {
+	_ = vm.Set("strings", &Strings{})
 }

@@ -226,7 +226,7 @@ func (sender *Faker) Reply(msgs ...interface{}) ([]string, error) {
 		}
 	}
 
-	return []string{}, nil
+	return []string{rt}, nil
 }
 
 func (sender *Faker) Delete() error {
