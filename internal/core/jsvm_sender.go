@@ -67,11 +67,12 @@ type ImagePath string
 type VideoUrl string
 
 type Faker struct {
-	Message string
-	Type    string
-	UserId  string
-	ChatId  int
-	Carry   chan string
+	Message  string
+	Type     string
+	Platform string
+	UserId   string
+	ChatId   int
+	Carry    chan string
 	BaseSender
 	Admin bool
 }
@@ -141,10 +142,10 @@ func (sender *Faker) GetChatId() int {
 }
 
 func (sender *Faker) GetPlatform() string {
-	if sender.Type == "" {
+	if sender.Platform == "" {
 		return "fake"
 	}
-	return sender.Type
+	return sender.Platform
 }
 
 func (sender *Faker) GetImType() string {

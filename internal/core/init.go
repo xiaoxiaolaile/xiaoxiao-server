@@ -6,12 +6,12 @@ import (
 )
 
 func Init() {
+	initToHandleMessage()
 	initTimeLoc()
 	initLog()
 	InitStore()
 	initPlugins()
 	initWeb()
-	initToHandleMessage()
 
 	NewPlugin(Function{
 		Rules: []string{"hello"},
