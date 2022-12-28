@@ -40,6 +40,7 @@ func newVm() *goja.Runtime {
 	loadBucket(vm)
 	loadSender(vm)
 	loadTime(vm)
+	loadFmt(vm)
 	return vm
 }
 
@@ -94,4 +95,7 @@ func loadTime(vm *goja.Runtime) {
 
 func loadConsole(vm *goja.Runtime) {
 	_ = vm.Set("console", jsvm.Console{})
+}
+func loadFmt(vm *goja.Runtime) {
+	_ = vm.Set("fmt", jsvm.Fmt{})
 }

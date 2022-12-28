@@ -45,3 +45,7 @@ func (b *BucketJs) DeleteAll() {
 func (b *BucketJs) Name() string {
 	return string(b.Bucket)
 }
+
+func (b *BucketJs) Watch(key string, f func(old, now, key string)) {
+
+}
