@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/console"
 	"github.com/dop251/goja_nodejs/require"
@@ -68,6 +69,14 @@ console.log(time.parse("2024/12/12 10:11:12", "2006/01/02 15:04:05", "Asia/Shang
 
 	if err != nil {
 		logs.Error(err)
+	}
+
+	// 打点器和定时器的机制有点相似：一个通道用来发送数据。
+	// 这里我们在这个通道上使用内置的 `range` 来迭代值每隔
+	// 500ms 发送一次的值。
+	ticker := time.NewTicker(time.Millisecond * 1000)
+	for t := range ticker.C {
+		fmt.Println("Tick at", t)
 	}
 
 }

@@ -3,6 +3,7 @@ package jsvm
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dop251/goja"
 	"github.com/go-resty/resty/v2"
 	"strings"
 	"time"
@@ -44,7 +45,18 @@ func JsRequest(wt interface{}, handles ...func(error, map[string]interface{}, in
 			case "method":
 				method = strings.ToUpper(props[i].(string))
 			case "url":
-				url = props[i].(string)
+				switch props[i].(type) {
+				case string:
+					url = props[i].(string)
+				case func(call goja.FunctionCall) goja.Value:
+					f := props[i].(func(call goja.FunctionCall) goja.Value)
+					call := goja.FunctionCall{}
+					url = f(call).String()
+					//if fn, ok := goja.AssertFunction(f); ok {
+					//	v, _ := fn(nil)
+					//	url = v.String()
+					//}
+				}
 			case "json":
 				isJson = props[i].(bool)
 			//case "datatype":
@@ -74,7 +86,7 @@ func JsRequest(wt interface{}, handles ...func(error, map[string]interface{}, in
 					data[s] = fmt.Sprintf("%v", v)
 				}
 				request.SetFormData(data)
-			case "proxyUrl":
+			case "proxyurl":
 				proxyUrl := props[i].(string)
 				client.SetProxy(proxyUrl)
 			}
@@ -98,12 +110,13 @@ func JsRequest(wt interface{}, handles ...func(error, map[string]interface{}, in
 	//	req.SetTransport(Transport)
 	//}
 
+	client.SetProxy("http://127.0.0.1:7890")
 	rsp, err := request.Execute(method, url)
 	rspObj := map[string]interface{}{}
 	var bd interface{}
 	if err == nil {
-		rspObj["status"] = rsp.StatusCode
-		rspObj["statusCode"] = rsp.StatusCode
+		rspObj["status"] = rsp.StatusCode()
+		rspObj["statusCode"] = rsp.StatusCode()
 		data := rsp.Body()
 		if isJson {
 			var v interface{}

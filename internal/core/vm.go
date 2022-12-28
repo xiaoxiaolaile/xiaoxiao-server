@@ -72,6 +72,7 @@ func loadBucket(vm *goja.Runtime) {
 
 // 加载Sender
 func loadSender(vm *goja.Runtime) {
+	_ = vm.Set("running", func() bool { return true })
 	_ = vm.Set("Sender", func(call goja.ConstructorCall) *goja.Object {
 		name := call.Argument(0).ToString().String()
 		//fmt.Println("test =>", name)
