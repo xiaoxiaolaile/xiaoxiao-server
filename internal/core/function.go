@@ -242,7 +242,7 @@ func addRules(prefix string, function *Function) {
 			function.Handle = func(s jsvm.Sender) interface{} {
 				//加载与运行脚本
 				str := function.Content
-				_, err := runScript(s, str)
+				_, err := runDefaultScript(s, str)
 				if err != nil {
 					logs.Error(err)
 				}
@@ -329,7 +329,7 @@ func initServerPlugin(functions ...*Function) map[string]*jsvm.WebService {
 				})
 			}
 		})
-		_, err := runWebScript(vm, f.Content)
+		_, err := runScript(vm, getWebSender(), f.Content)
 		logs.Info(fmt.Sprintf("初始化%s服务", f.Title))
 		if err != nil {
 			//c.String(http.StatusBadGateway, err.Error())
@@ -341,18 +341,9 @@ func initServerPlugin(functions ...*Function) map[string]*jsvm.WebService {
 	return keyMap
 }
 
-// 运行js脚本
-func runWebScript(vm *goja.Runtime, str string) (goja.Value, error) {
-	_ = vm.Set("request", jsvm.JsRequest)
-
-	reStr := `require\(['"](.*)['"]\)`
-	re := regexp.MustCompile(reStr)
-	str = re.ReplaceAllStringFunc(str, func(s string) string {
-		s = strings.ReplaceAll(s, "\"", "'")
-		if !strings.Contains(s, "./") {
-			s = s[:9] + "./" + s[9:]
-		}
-		return s
-	})
-	return vm.RunString(str)
+func getWebSender() jsvm.Sender {
+	return &jsvm.Faker{
+		Type:  "WebSender",
+		Admin: true,
+	}
 }

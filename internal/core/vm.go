@@ -9,8 +9,12 @@ import (
 )
 
 // 运行js脚本
-func runScript(s jsvm.Sender, str string) (goja.Value, error) {
-	vm := newVm()
+func runDefaultScript(s jsvm.Sender, str string) (goja.Value, error) {
+	return runScript(newVm(), s, str)
+}
+
+// 运行js脚本
+func runScript(vm *goja.Runtime, s jsvm.Sender, str string) (goja.Value, error) {
 	_ = vm.Set("s", s)
 	_ = vm.Set("sender", s)
 	_ = vm.Set("image", func(url string) interface{} {
@@ -41,6 +45,7 @@ func newVm() *goja.Runtime {
 	loadSender(vm)
 	loadTime(vm)
 	loadFmt(vm)
+	loadSillyGirl(vm)
 	return vm
 }
 
@@ -98,4 +103,11 @@ func loadConsole(vm *goja.Runtime) {
 }
 func loadFmt(vm *goja.Runtime) {
 	_ = vm.Set("fmt", jsvm.Fmt{})
+}
+func loadSillyGirl(vm *goja.Runtime) {
+	_ = vm.Set("SillyGirl", func(call goja.ConstructorCall) *goja.Object {
+		//name := call.Argument(0).ToString().String()
+		//fmt.Println("test =>", name)
+		return vm.ToValue(jsvm.NewSillyGirl()).(*goja.Object)
+	})
 }
