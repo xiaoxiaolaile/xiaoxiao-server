@@ -3,13 +3,12 @@ package core
 import (
 	logs "github.com/sirupsen/logrus"
 	"time"
-	"xiaoxiao/internal/jsvm"
 )
 
 func Init() {
 	initTimeLoc()
 	initLog()
-	jsvm.InitStore()
+	InitStore()
 	initPlugins()
 	initWeb()
 	initToHandleMessage()
@@ -17,7 +16,7 @@ func Init() {
 	NewPlugin(Function{
 		Rules: []string{"hello"},
 		Admin: true,
-		Handle: func(s jsvm.Sender) interface{} {
+		Handle: func(s Sender) interface{} {
 
 			logs.Printf("获取参数：%s", s.Get(0))
 			return "你好，小小 为您服务。"

@@ -6,10 +6,9 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
-	"xiaoxiao/internal/jsvm"
 )
 
-var Senders chan jsvm.Sender
+var Senders chan Sender
 
 var isTerminal bool
 
@@ -23,7 +22,7 @@ func SetTerminal(b bool) {
 
 func initToHandleMessage() {
 	//reply := BoltBucket("reply")
-	Senders = make(chan jsvm.Sender)
+	Senders = make(chan Sender)
 	go func() {
 		for {
 			s := <-Senders
@@ -49,7 +48,7 @@ func TrimHiddenCharacter(originStr string) string {
 }
 
 // HandleMessage 处理接受到的消息
-func HandleMessage(sender jsvm.Sender) {
+func HandleMessage(sender Sender) {
 	defer func() {
 		recover()
 	}()
@@ -72,8 +71,8 @@ func HandleMessage(sender jsvm.Sender) {
 
 	mtd := false
 
-	jsvm.WaitsRange(func(k, v interface{}) bool {
-		c := v.(*jsvm.Carry)
+	WaitsRange(func(k, v interface{}) bool {
+		c := v.(*Carry)
 		vs, _ := url.ParseQuery(k.(string))
 		//userID := vs.Get("u")
 		//chatID := vs.Get("c")

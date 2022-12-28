@@ -5,22 +5,21 @@ import (
 	"github.com/dop251/goja_nodejs/require"
 	"regexp"
 	"strings"
-	"xiaoxiao/internal/jsvm"
 )
 
 // 运行js脚本
-func runDefaultScript(s jsvm.Sender, str string) (goja.Value, error) {
+func runDefaultScript(s Sender, str string) (goja.Value, error) {
 	return runScript(newVm(), s, str)
 }
 
 // 运行js脚本
-func runScript(vm *goja.Runtime, s jsvm.Sender, str string) (goja.Value, error) {
+func runScript(vm *goja.Runtime, s Sender, str string) (goja.Value, error) {
 	_ = vm.Set("s", s)
 	_ = vm.Set("sender", s)
 	_ = vm.Set("image", func(url string) interface{} {
 		return `[CQ:image,file=` + url + `]`
 	})
-	_ = vm.Set("request", jsvm.JsRequest)
+	_ = vm.Set("request", JsRequest)
 
 	reStr := `require\(['"](.*)['"]\)`
 	re := regexp.MustCompile(reStr)
@@ -64,8 +63,8 @@ func loadBucket(vm *goja.Runtime) {
 	_ = vm.Set("Bucket", func(call goja.ConstructorCall) *goja.Object {
 		name := call.Argument(0).ToString().String()
 		//fmt.Println("test =>", name)
-		return vm.ToValue(jsvm.BucketJs{
-			Bucket: jsvm.BoltBucket(name),
+		return vm.ToValue(BucketJs{
+			Bucket: BoltBucket(name),
 		}).(*goja.Object)
 	})
 }
@@ -76,7 +75,7 @@ func loadSender(vm *goja.Runtime) {
 	_ = vm.Set("Sender", func(call goja.ConstructorCall) *goja.Object {
 		name := call.Argument(0).ToString().String()
 		//fmt.Println("test =>", name)
-		return vm.ToValue(jsvm.SenderJs{
+		return vm.ToValue(SenderJs{
 			Name: name,
 		}).(*goja.Object)
 	})
@@ -96,19 +95,19 @@ func loadModules(vm *goja.Runtime) {
 
 // 加载时间方法
 func loadTime(vm *goja.Runtime) {
-	_ = vm.Set("time", jsvm.Time{})
+	_ = vm.Set("time", Time{})
 }
 
 func loadConsole(vm *goja.Runtime) {
-	_ = vm.Set("console", jsvm.Console{})
+	_ = vm.Set("console", Console{})
 }
 func loadFmt(vm *goja.Runtime) {
-	_ = vm.Set("fmt", jsvm.Fmt{})
+	_ = vm.Set("fmt", Fmt{})
 }
 func loadSillyGirl(vm *goja.Runtime) {
 	_ = vm.Set("SillyGirl", func(call goja.ConstructorCall) *goja.Object {
 		//name := call.Argument(0).ToString().String()
 		//fmt.Println("test =>", name)
-		return vm.ToValue(jsvm.NewSillyGirl()).(*goja.Object)
+		return vm.ToValue(NewSillyGirl()).(*goja.Object)
 	})
 }

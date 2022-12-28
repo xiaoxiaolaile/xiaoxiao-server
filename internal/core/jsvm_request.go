@@ -1,4 +1,4 @@
-package jsvm
+package core
 
 import (
 	"encoding/json"

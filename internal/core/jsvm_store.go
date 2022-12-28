@@ -1,13 +1,12 @@
-package jsvm
+package core
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/boltdb/bolt"
 	"reflect"
 	"strings"
-
-	"github.com/boltdb/bolt"
 )
 
 var db *bolt.DB

@@ -1,4 +1,4 @@
-package jsvm
+package core
 
 var Pushs = map[string]func(interface{}, string, interface{}, string){}
 var GroupPushs = map[string]func(interface{}, interface{}, string, string){}

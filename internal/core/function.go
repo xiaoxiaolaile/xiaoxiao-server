@@ -9,7 +9,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"xiaoxiao/internal/jsvm"
 )
 
 type Function struct {
@@ -18,7 +17,7 @@ type Function struct {
 	UserId  *Filter
 	GroupId *Filter
 	FindAll bool
-	Handle  func(s jsvm.Sender) interface{} `json:"-"`
+	Handle  func(s Sender) interface{} `json:"-"`
 	Show    string
 	Hidden  bool
 
@@ -107,7 +106,7 @@ func getFunctions(f func(d Function) bool) []*Function {
 
 // 数据库加载插件
 func initPlugins() {
-	db := jsvm.BoltBucket("plugins")
+	db := BoltBucket("plugins")
 	db.Foreach(func(k, v []byte) error {
 		functions = append(functions, createPlugin(string(v)))
 		return nil
@@ -203,7 +202,7 @@ func AddCommand(prefix string, funArray ...*Function) {
 		if fun.Cron != "" {
 			cmd := fun
 			if _, err := C.AddFunc(fun.Cron, func() {
-				cmd.Handle(&jsvm.Faker{})
+				cmd.Handle(&Faker{})
 			}); err != nil {
 
 			} else {
@@ -239,7 +238,7 @@ func addRules(prefix string, function *Function) {
 		}
 		f := function.Handle
 		if f == nil {
-			function.Handle = func(s jsvm.Sender) interface{} {
+			function.Handle = func(s Sender) interface{} {
 				//加载与运行脚本
 				str := function.Content
 				_, err := runDefaultScript(s, str)
@@ -255,7 +254,7 @@ func addRules(prefix string, function *Function) {
 }
 
 // 解析执行插件消息
-func parseFunction(sender jsvm.Sender) {
+func parseFunction(sender Sender) {
 	ct := sender.GetContent()
 	content := TrimHiddenCharacter(ct)
 
@@ -315,8 +314,8 @@ func parseFunction(sender jsvm.Sender) {
 *
 初始化server插件
 */
-func initServerPlugin(functions ...*Function) map[string]*jsvm.WebService {
-	keyMap := make(map[string]*jsvm.WebService)
+func initServerPlugin(functions ...*Function) map[string]*WebService {
+	keyMap := make(map[string]*WebService)
 	for _, f := range functions {
 		vm := newVm()
 		require.RegisterNativeModule("express", func(runtime *goja.Runtime, module *goja.Object) {
@@ -325,7 +324,7 @@ func initServerPlugin(functions ...*Function) map[string]*jsvm.WebService {
 				mm := m
 				_ = o.Set(mm, func(relativePath string, handle func(*goja.Object, *goja.Object)) {
 					key := mm + "-" + relativePath
-					keyMap[key] = jsvm.NewWebService(vm, handle)
+					keyMap[key] = NewWebService(vm, handle)
 				})
 			}
 		})
@@ -341,8 +340,8 @@ func initServerPlugin(functions ...*Function) map[string]*jsvm.WebService {
 	return keyMap
 }
 
-func getWebSender() jsvm.Sender {
-	return &jsvm.Faker{
+func getWebSender() Sender {
+	return &Faker{
 		Type:  "WebSender",
 		Admin: true,
 	}
