@@ -21,7 +21,7 @@ func mapFileSystemSourceLoader(files map[string]string) require.SourceLoader {
 func main() {
 	vm := goja.New()
 	r := require.NewRegistry(require.WithLoader(mapFileSystemSourceLoader(map[string]string{
-		"a": `
+		"CQ码": `
 		module.exports = {  
 			hello:hello,
 		}
@@ -35,7 +35,7 @@ func main() {
 	r.Enable(vm)
 
 	str := `
-	const a = require("a");
+	const a = require("CQ码");
 	const b = require('b');
 	a.hello() + b.done;
 

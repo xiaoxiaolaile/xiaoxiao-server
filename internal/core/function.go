@@ -315,9 +315,9 @@ func parseFunction(sender jsvm.Sender) {
 *
 初始化server插件
 */
-func initServerPlugin(scripts ...string) map[string]*jsvm.WebService {
+func initServerPlugin(functions ...*Function) map[string]*jsvm.WebService {
 	keyMap := make(map[string]*jsvm.WebService)
-	for _, script := range scripts {
+	for _, f := range functions {
 		vm := newVm()
 		require.RegisterNativeModule("express", func(runtime *goja.Runtime, module *goja.Object) {
 			o := module.Get("exports").(*goja.Object)
@@ -329,12 +329,30 @@ func initServerPlugin(scripts ...string) map[string]*jsvm.WebService {
 				})
 			}
 		})
-		_, err := vm.RunString(script)
+		_, err := runWebScript(vm, f.Content)
+		logs.Info(fmt.Sprintf("初始化%s服务", f.Title))
 		if err != nil {
 			//c.String(http.StatusBadGateway, err.Error())
 			fmt.Println(err)
+			//fmt.Println(f.Content)
 			//return
 		}
 	}
 	return keyMap
+}
+
+// 运行js脚本
+func runWebScript(vm *goja.Runtime, str string) (goja.Value, error) {
+	_ = vm.Set("request", jsvm.JsRequest)
+
+	reStr := `require\(['"](.*)['"]\)`
+	re := regexp.MustCompile(reStr)
+	str = re.ReplaceAllStringFunc(str, func(s string) string {
+		s = strings.ReplaceAll(s, "\"", "'")
+		if !strings.Contains(s, "./") {
+			s = s[:9] + "./" + s[9:]
+		}
+		return s
+	})
+	return vm.RunString(str)
 }

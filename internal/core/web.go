@@ -14,14 +14,7 @@ func ServerRun(add ...string) {
 
 func initWeb() {
 
-	var scripts []string
-
-	servers := getServers()
-	for _, function := range servers {
-		scripts = append(scripts, function.Content)
-	}
-	keyMap := initServerPlugin(scripts...)
-
+	keyMap := initServerPlugin(getServers()...)
 	server.GET("/list", func(c *gin.Context) {
 		c.JSON(200, getPlugins())
 	})

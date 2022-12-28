@@ -38,6 +38,7 @@ func newVm() *goja.Runtime {
 	loadConsole(vm)
 	loadModules(vm)
 	loadBucket(vm)
+	loadSender(vm)
 	loadTime(vm)
 	return vm
 }
@@ -59,6 +60,17 @@ func loadBucket(vm *goja.Runtime) {
 		//fmt.Println("test =>", name)
 		return vm.ToValue(jsvm.BucketJs{
 			Bucket: jsvm.BoltBucket(name),
+		}).(*goja.Object)
+	})
+}
+
+// 加载Sender
+func loadSender(vm *goja.Runtime) {
+	_ = vm.Set("Sender", func(call goja.ConstructorCall) *goja.Object {
+		name := call.Argument(0).ToString().String()
+		//fmt.Println("test =>", name)
+		return vm.ToValue(jsvm.SenderJs{
+			Name: name,
 		}).(*goja.Object)
 	})
 }
