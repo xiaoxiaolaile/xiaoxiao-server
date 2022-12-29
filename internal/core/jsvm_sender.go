@@ -85,7 +85,25 @@ func (r *ResSender) GetContent() string {
 	return r.context
 }
 
-func (sender *Faker) Listen(data int64) *ResSender {
+func (sender *Faker) Listen(args ...interface{}) *ResSender {
+
+	//进行判断 ，如果第一个参数是数字，进行监听，如果是数组，进行注册插件
+
+	if len(args) > 0 {
+		d := args[0]
+		switch d.(type) {
+		case int64:
+			return listen(sender, d.(int64))
+		}
+	}
+
+	return nil
+
+}
+func listen(sender *Faker, data int64) *ResSender {
+
+	//进行判断 ，如果第一个参数是数字，进行监听，如果是数组，进行注册插件
+
 	key := fmt.Sprintf("u=%v&c=%v&i=%v&t=%v", sender.GetUserId(), sender.GetChatId(), sender.GetImType(), time.Now().UnixNano())
 	timeout := time.Millisecond * time.Duration(data)
 	//if fg != nil {
