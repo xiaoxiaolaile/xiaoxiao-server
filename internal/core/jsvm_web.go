@@ -147,6 +147,10 @@ func (r *Request) Cookie(s string) string {
 	return cookie
 }
 
+func (r *Request) Continue() {
+
+}
+
 func (s *WebService) getRes(c *gin.Context) *goja.Object {
 	return s.vm.ToValue(&Response{S: s, C: c}).(*goja.Object)
 }
