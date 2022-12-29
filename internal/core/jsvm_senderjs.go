@@ -63,15 +63,15 @@ func (s *SenderJs) Receive(data map[string]interface{}) {
 				Senders <- f
 
 			}()
-			go func() {
-				f := &Faker{
-					Type:     "terminal",
-					Platform: "terminal",
-					Message:  fmt.Sprintf("%v", str),
-					Admin:    true,
-				}
-				Senders <- f
-			}()
+			//go func() {
+			//	f := &Faker{
+			//		Type:     "terminal",
+			//		Platform: "terminal",
+			//		Message:  fmt.Sprintf("%v", str),
+			//		Admin:    true,
+			//	}
+			//	Senders <- f
+			//}()
 		}
 
 	}
