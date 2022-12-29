@@ -3,6 +3,7 @@ package core
 import (
 	"errors"
 	"fmt"
+	"github.com/dop251/goja"
 	logs "github.com/sirupsen/logrus"
 	"reflect"
 	"regexp"
@@ -75,6 +76,7 @@ type Faker struct {
 	Carry    chan string
 	BaseSender
 	Admin bool
+	Vm    *goja.Runtime
 }
 
 type ResSender struct {
@@ -88,12 +90,36 @@ func (r *ResSender) GetContent() string {
 func (sender *Faker) Listen(args ...interface{}) *ResSender {
 
 	//进行判断 ，如果第一个参数是数字，进行监听，如果是数组，进行注册插件
-
 	if len(args) > 0 {
 		d := args[0]
 		switch d.(type) {
 		case int64:
 			return listen(sender, d.(int64))
+		case []interface{}:
+			tmp := d.([]interface{})
+			var rules []string
+			for _, s := range tmp {
+				rules = append(rules, fmt.Sprintf("%v", s))
+			}
+			NewPlugin(Function{
+				Rules: rules,
+				Admin: true,
+				Handle: func(s Sender) interface{} {
+					if len(args) > 1 {
+						f := args[1].(func(call goja.FunctionCall) goja.Value)
+						if sender.Vm != nil {
+							call := goja.FunctionCall{
+								Arguments: []goja.Value{
+									sender.Vm.ToValue(&s),
+								},
+							}
+							return f(call)
+						}
+					}
+					return nil
+				},
+			})
+
 		}
 	}
 

@@ -328,7 +328,7 @@ func initServerPlugin(functions ...*Function) map[string]*WebService {
 				})
 			}
 		})
-		_, err := runScript(vm, getWebSender(), f.Content)
+		_, err := runScript(vm, getWebSender(vm), f.Content)
 		logs.Info(fmt.Sprintf("初始化%s服务", f.Title))
 		if err != nil {
 			//c.String(http.StatusBadGateway, err.Error())
@@ -340,9 +340,10 @@ func initServerPlugin(functions ...*Function) map[string]*WebService {
 	return keyMap
 }
 
-func getWebSender() Sender {
+func getWebSender(vm *goja.Runtime) Sender {
 	return &Faker{
 		Type:  "WebSender",
 		Admin: true,
+		Vm:    vm,
 	}
 }
