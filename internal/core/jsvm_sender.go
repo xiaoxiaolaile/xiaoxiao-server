@@ -25,6 +25,7 @@ type Sender interface {
 	GetReplySenderUserId() int
 	GetRawMessage() interface{}
 	SetMatch([]string)
+	SetRuleContent(string)
 	SetAllMatch([][]string)
 	GetMatch() []string
 	GetAllMatch() [][]string
@@ -48,7 +49,7 @@ type Sender interface {
 	UAtLast()
 	IsAtLast() bool
 	MessagesToSend() string
-	Param(string) string
+	Param(interface{}) string
 	GetPlatform() string
 }
 
@@ -94,7 +95,7 @@ func (sender *Faker) Listen(args ...interface{}) *ResSender {
 		d := args[0]
 		switch d.(type) {
 		case int64:
-			return listen(sender, d.(int64))
+			return listen(sender, d.(int64), "")
 		case []interface{}:
 			tmp := d.([]interface{})
 			var rules []string
@@ -126,7 +127,7 @@ func (sender *Faker) Listen(args ...interface{}) *ResSender {
 	return nil
 
 }
-func listen(sender *Faker, data int64) *ResSender {
+func listen(sender *Faker, data int64, pattern string) *ResSender {
 
 	//进行判断 ，如果第一个参数是数字，进行监听，如果是数组，进行注册插件
 
@@ -139,7 +140,7 @@ func listen(sender *Faker, data int64) *ResSender {
 	//		key += fmt.Sprintf("&f=true")
 	//	}
 	//}
-	c := &Carry{Sender: sender}
+	c := &Carry{Sender: sender, Pattern: pattern}
 
 	if c.Pattern == "" {
 		c.Pattern = `[\s\S]*`
@@ -309,10 +310,15 @@ type BaseSender struct {
 	ToSendMessages []string
 	IsFinished     bool
 	Duration       *time.Duration
+	RuleContent    string
 }
 
 func (sender *BaseSender) SetMatch(ss []string) {
 	sender.matches = [][]string{ss}
+}
+
+func (sender *BaseSender) SetRuleContent(s string) {
+	sender.RuleContent = s
 }
 func (sender *BaseSender) SetAllMatch(ss [][]string) {
 	sender.matches = ss
@@ -441,8 +447,32 @@ func (sender *BaseSender) IsAtLast() bool {
 func (sender *BaseSender) MessagesToSend() string {
 	return strings.Join(sender.ToSendMessages, "\n")
 }
-func (sender *BaseSender) Param(key string) string {
-	return sender.Get(0)
+func (sender *BaseSender) Param(key interface{}) string {
+
+	switch key.(type) {
+	case int64:
+		return sender.Get(int(key.(int64)))
+	case string:
+		if len(sender.matches) > 0 {
+			return param(sender.RuleContent, key.(string), sender.matches[0])
+		}
+	}
+	return ""
+}
+
+func param(str, key string, arr []string) string {
+	logs.Warn(str)
+	logs.Warn(key)
+	logs.Warn(arr)
+	logs.Warn("=========")
+	for i, s := range strings.Split(str, "\\s+") {
+		if strings.Contains(s, key) {
+			if i < len(arr) {
+				return arr[i]
+			}
+		}
+	}
+	return ""
 }
 
 var TimeOutError = errors.New("指令超时")

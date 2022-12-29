@@ -285,6 +285,22 @@ func parseFunction(sender Sender) {
 					matched = true
 				}
 			}
+
+			//自定义的匹配
+			if res := regexp.MustCompile(`\[.*\]`).FindStringSubmatch(rule); len(res) > 0 {
+				customRule := customRule(rule)
+				if res := regexp.MustCompile(customRule).FindStringSubmatch(content); len(res) > 0 {
+					logs.Info("3:匹配到规则-修改：%s", customRule)
+					if !function.Hidden {
+						logs.Info("3:匹配到规则：%s", rule)
+					}
+					sender.SetMatch(res[1:])
+					sender.SetRuleContent(rule)
+					matched = true
+				}
+
+			}
+
 			if matched {
 				//if function.Admin && !sender.IsAdmin() {
 				//	sender.Delete()
@@ -308,6 +324,44 @@ func parseFunction(sender Sender) {
 		}
 	next:
 	}
+}
+
+// 自定义的解析方式
+func customRule(str string) string {
+	str = strings.Replace(str, "^", "", -1)
+	str = strings.Replace(str, "$", "", -1)
+	//logs.Info(str)
+	arr := strings.Split(str, "\\s+")
+	//logs.Info(arr)
+	var myArr []string
+	for _, s := range arr {
+		str := ""
+		reg := ""
+		if strings.Contains(s, ":") {
+			reg = ":.*]"
+			str = regexp.MustCompile(reg).FindString(s)
+			str = strings.Replace(str, ":", "", -1)
+			str = strings.Replace(str, "]", "", -1)
+			str = strings.Replace(str, ",", "|", -1)
+			str = "(" + str + ")"
+		} else {
+			reg = `\[.*\]`
+
+			//str = regexp.MustCompile(reg).ReplaceAllString(s, "(.*)")
+			if res := regexp.MustCompile(reg).FindStringSubmatch(s); len(res) > 0 {
+				str = regexp.MustCompile(reg).ReplaceAllString(s, "(.*)")
+			} else {
+				str = "(" + s + ")"
+			}
+
+		}
+		//logs.Info(reg, str)
+		myArr = append(myArr, str)
+	}
+
+	s := "^" + strings.Join(myArr, `\s+`) + "$"
+	//logs.Info(s)
+	return s
 }
 
 /*
