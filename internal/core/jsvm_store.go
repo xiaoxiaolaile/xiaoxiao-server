@@ -79,7 +79,7 @@ func (bucket BoltBucket) GetArray(key string) []string {
 	return strings.Split(bucket.GetString(key), ",")
 }
 func (bucket BoltBucket) Get(kv ...interface{}) string {
-	return bucket.GetString(kv)
+	return bucket.GetString(kv...)
 }
 func (bucket BoltBucket) GetString(kv ...interface{}) string {
 	var key, value string

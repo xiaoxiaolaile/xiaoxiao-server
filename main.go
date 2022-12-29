@@ -10,7 +10,7 @@ import (
 func main() {
 	core.Init()
 	sillyGirl := core.BoltBucket("sillyGirl")
-	port := sillyGirl.GetString("port", "8080")
+	port := sillyGirl.GetString("port", "8081")
 	logs.Printf("Http服务已运行(%s)。", port)
 	go core.ServerRun("0.0.0.0:" + port)
 	logs.Printf("命令怎么失效了？关注频道 https://t.me/kczz2021 获取最新消息，发言关注微信公众号送喜官获取暗号。")

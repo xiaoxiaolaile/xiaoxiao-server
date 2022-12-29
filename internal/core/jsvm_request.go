@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/dop251/goja"
 	"github.com/go-resty/resty/v2"
+	logs "github.com/sirupsen/logrus"
 	"strings"
 	"time"
 )
@@ -127,6 +128,8 @@ func JsRequest(wt interface{}, handles ...func(error, map[string]interface{}, in
 		}
 		rspObj["body"] = bd
 		rspObj["headers"] = rsp.Header()
+	} else {
+		logs.Error(err)
 	}
 	if len(handles) > 0 {
 		return handles[0](err, rspObj, bd)

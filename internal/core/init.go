@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	logs "github.com/sirupsen/logrus"
 	"time"
 )
@@ -17,9 +18,7 @@ func Init() {
 		Rules: []string{"hello"},
 		Admin: true,
 		Handle: func(s Sender) interface{} {
-
-			logs.Printf("获取参数：%s", s.Get(0))
-			return "你好，小小 为您服务。"
+			return fmt.Sprintf("你好，%v 为您服务。", BoltBucket("sillyGirl").Get("name"))
 		},
 	})
 }
