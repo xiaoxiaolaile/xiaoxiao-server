@@ -59,16 +59,16 @@ func JsRequest(wt interface{}, handles ...func(error, map[string]interface{}, in
 				}
 			case "json":
 				isJson = props[i].(bool)
-			//case "datatype":
-			//	switch props[i].(type) {
-			//	case string:
-			//		switch strings.ToLower(props[i].(string)) {
-			//		case "json":
-			//			isJson = true
-			//		case "location":
-			//			location = true
-			//		}
-			//	}
+			case "datatype":
+				switch props[i].(type) {
+				case string:
+					switch strings.ToLower(props[i].(string)) {
+					case "json":
+						isJson = true
+						//case "location":
+						//	location = true
+					}
+				}
 			case "body":
 				body := ""
 				if v, ok := props[i].(string); !ok {
