@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"io/fs"
 	"log"
@@ -26,7 +27,15 @@ var embedFiles embed.FS
 
 func main() {
 	server := gin.New()
-	server.StaticFS("/", getFileSystem(false))
+	gin.SetMode(gin.DebugMode)
+	server.StaticFS("/ui/", getFileSystem(false))
+	server.GET("/api/currentUser", func(c *gin.Context) {
+
+		data := `{"data":{"isLogin":false},"errorCode":"401","errorMessage":"请先登录！","success":true}`
+		m := make(map[string]interface{})
+		json.Unmarshal([]byte(data), &m)
+		c.JSON(401, m)
+	})
 	server.Run(":8888")
 
 	//http.Handle("/", http.FileServer(getFileSystem(false)))
