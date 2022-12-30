@@ -44,6 +44,7 @@ func initWeb() {
 			c.JSON(http.StatusOK, "页面不存在")
 		}
 	})
+	//server.Static("/", "")
 }
 
 func init() {
