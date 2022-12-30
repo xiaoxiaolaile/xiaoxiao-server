@@ -11,8 +11,10 @@ func Init() {
 	initTimeLoc()
 	initLog()
 	InitStore()
+	initSillyGirl()
 	initPlugins()
 	initWeb()
+	initApi()
 
 	NewPlugin(Function{
 		Rules: []string{"hello"},

@@ -1,5 +1,7 @@
 package core
 
+import "github.com/google/uuid"
+
 func black(filter *Filter, str string) bool {
 	if filter != nil {
 		if filter.BlackMode {
@@ -22,4 +24,9 @@ func Contains(strs []string, str string) bool {
 		}
 	}
 	return false
+}
+
+func GenUUID() string {
+	u2, _ := uuid.NewUUID()
+	return u2.String()
 }

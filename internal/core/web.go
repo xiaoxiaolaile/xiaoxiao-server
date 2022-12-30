@@ -48,8 +48,9 @@ func initWeb() {
 }
 
 func init() {
-	gin.SetMode(gin.ReleaseMode)
+	//gin.SetMode(gin.ReleaseMode)
 	server = gin.New()
+	server.Use(gin.Logger())
 	server.GET("/name", func(ctx *gin.Context) {
 		ctx.String(200, "sillyGirl")
 	})
