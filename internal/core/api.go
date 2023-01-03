@@ -27,6 +27,24 @@ func initApi() {
 	g.Use(userInterceptor())
 	g.GET("/currentUser", currentUser)
 	g.GET("/bucket", getBucketList)
+	g.GET("/bucket/:name", getBucketNameList)
+}
+
+func getBucketNameList(c *gin.Context) {
+	name := c.Param("name")
+	type R struct {
+		Key   string `json:"key"`
+		Value string `json:"value"`
+	}
+	var list []R
+	BoltBucket(name).Foreach(func(k, v []byte) error {
+		list = append(list, R{
+			Key:   string(k),
+			Value: string(v),
+		})
+		return nil
+	})
+	successRespond(c, "", list)
 }
 
 func getBucketList(c *gin.Context) {
