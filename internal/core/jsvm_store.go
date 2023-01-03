@@ -37,6 +37,19 @@ func InitStore() {
 	}
 }
 
+func getBucKetList() []string {
+	var list []string
+	_ = db.View(func(tx *bolt.Tx) error {
+		_ = tx.ForEach(func(name []byte, b *bolt.Bucket) error {
+			//fmt.Printf("name=%s, \n", name)
+			list = append(list, string(name))
+			return nil
+		})
+		return nil
+	})
+	return list
+}
+
 func (bucket BoltBucket) Set(key interface{}, value interface{}) error {
 	return db.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte(bucket))
