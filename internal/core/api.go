@@ -28,6 +28,17 @@ func initApi() {
 	g.GET("/currentUser", currentUser)
 	g.GET("/bucket", getBucketList)
 	g.GET("/bucket/:name", getBucketNameList)
+	g.POST("/bucket/:name", addBucketName)
+}
+
+func addBucketName(c *gin.Context) {
+	name := c.Param("name")
+	j := make(map[string]string) //注意该结构接受的内容
+	_ = c.ShouldBind(&j)
+	//logs.Printf("name: %s, key: %s, value: %s", name, j["key"], j["value"])
+	bucket := BoltBucket(name)
+	_ = bucket.Set(j["key"], j["value"])
+	successRespond(c, "成功", nil)
 }
 
 func getBucketNameList(c *gin.Context) {
@@ -111,6 +122,10 @@ func userInterceptor() gin.HandlerFunc {
 
 func userLogin(c *gin.Context) {
 	//{"username":"小小","password":"123456","autoLogin":false,"type":"account"}
+	sillyGirl := BoltBucket("sillyGirl")
+	defaultUserName = sillyGirl.GetString("name", defaultUserName)
+	defaultPassword = sillyGirl.GetString("password", defaultPassword)
+
 	j := make(map[string]string) //注意该结构接受的内容
 	_ = c.ShouldBind(&j)
 	log.Printf("%v", &j)
