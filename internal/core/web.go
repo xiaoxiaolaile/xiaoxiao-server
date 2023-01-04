@@ -55,9 +55,9 @@ func initWeb() {
 				r = d.Rules != nil
 			case "module":
 				r = d.Module
-			case "server":
-				r = len(d.Cron) > 0
 			case "cron":
+				r = len(d.Cron) > 0
+			case "server":
 				r = d.OnStart
 			}
 			if len(name) > 0 {
