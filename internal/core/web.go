@@ -2,6 +2,7 @@ package core
 
 import (
 	"github.com/gin-gonic/gin"
+	logs "github.com/sirupsen/logrus"
 	"net/http"
 	"sort"
 	"strconv"
@@ -36,10 +37,11 @@ func initWeb() {
 
 	server.GET("/api/plugin/:type", func(c *gin.Context) {
 		t := c.Param("type")
-		name := c.Query("name")
+		name := c.DefaultQuery("name", "")
 		page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 		pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
 
+		logs.Info(page)
 		db := BoltBucket("plugins")
 		var functions Functions
 		db.Foreach(func(k, v []byte) error {
@@ -71,7 +73,25 @@ func initWeb() {
 			}
 		}
 
-		successList(c, "", len(list), list[(page-1)*pageSize:page*pageSize])
+		total := len(list)
+		if total > 0 {
+			page = page - 1
+			fromIndex := page * pageSize
+			//分页不能大于总数
+			if fromIndex >= total {
+				//throw new ServiceException("页数或分页大小不正确!");
+				successList(c, "", total, []*Function{})
+				return
+			}
+			toIndex := (page + 1) * pageSize
+			if toIndex > total {
+				toIndex = total
+			}
+			successList(c, "", total, list[fromIndex:toIndex])
+		} else {
+			successList(c, "", total, []*Function{})
+		}
+
 	})
 
 	server.NoRoute(func(c *gin.Context) {

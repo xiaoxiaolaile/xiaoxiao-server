@@ -12,32 +12,32 @@ import (
 )
 
 type Function struct {
-	Rules   []string
-	ImType  *Filter
-	UserId  *Filter
-	GroupId *Filter
-	FindAll bool
+	Rules   []string                   `json:"rules"`
+	ImType  *Filter                    `json:"imType"`
+	UserId  *Filter                    `json:"userId"`
+	GroupId *Filter                    `json:"groupId"`
+	FindAll bool                       `json:"findAll"`
 	Handle  func(s Sender) interface{} `json:"-"`
-	Show    string
-	Hidden  bool
+	Show    string                     `json:"show"`
+	Hidden  bool                       `json:"hidden"`
 
-	Author      string
-	Origin      string
-	CreateAt    string
-	Description string
-	Version     string
-	Title       string
-	Platform    string
-	Priority    int
-	Cron        string
-	Admin       bool
-	Public      bool
-	Icon        string
-	Encrypt     bool
-	Disable     bool
-	Content     string
-	Module      bool
-	OnStart     bool
+	Author      string `json:"author"`
+	Origin      string `json:"origin"`
+	CreateAt    string `json:"createAt"`
+	Description string `json:"description"`
+	Version     string `json:"version"`
+	Title       string `json:"title"`
+	Platform    string `json:"platform"`
+	Priority    int    `json:"priority"`
+	Cron        string `json:"cron"`
+	Admin       bool   `json:"admin"`
+	Public      bool   `json:"public"`
+	Icon        string `json:"icon"`
+	Encrypt     bool   `json:"encrypt"`
+	Disable     bool   `json:"disable"`
+	Content     string `json:"content"`
+	Module      bool   `json:"module"`
+	OnStart     bool   `json:"onStart"`
 }
 
 type Filter struct {
