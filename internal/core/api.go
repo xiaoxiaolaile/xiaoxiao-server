@@ -72,10 +72,27 @@ func successRespond(c *gin.Context, message string, data interface{}) {
 	c.JSON(http.StatusOK, d)
 }
 
+func successList(c *gin.Context, message string, total int, data interface{}) {
+	d := RespondList{
+		Status:  http.StatusOK,
+		Message: message,
+		Data:    data,
+		Total:   total,
+	}
+	c.JSON(http.StatusOK, d)
+}
+
 type Respond struct {
 	Status  int         `json:"status"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
+}
+
+type RespondList struct {
+	Status  int         `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+	Total   int         `json:"total"`
 }
 
 func currentUser(c *gin.Context) {
