@@ -1,6 +1,8 @@
 package core
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 func black(filter *Filter, str string) bool {
 	if filter != nil {
@@ -29,4 +31,10 @@ func Contains(strs []string, str string) bool {
 func GenUUID() string {
 	u2, _ := uuid.NewUUID()
 	return u2.String()
+}
+
+func refreshPlugins() {
+	functions = []*Function{}
+	initPlugins()
+	keyMap = initServerPlugin(getServers()...)
 }

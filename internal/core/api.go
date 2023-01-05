@@ -6,6 +6,9 @@ import (
 	logs "github.com/sirupsen/logrus"
 	"log"
 	"net/http"
+	"sort"
+	"strconv"
+	"strings"
 )
 
 var defaultUserName string
@@ -29,6 +32,106 @@ func initApi() {
 	g.GET("/bucket", getBucketList)
 	g.GET("/bucket/:name", getBucketNameList)
 	g.POST("/bucket/:name", addBucketName)
+	g.GET("/plugin/:type", getPluginList)
+	g.GET("/script/:id", getPlugin)
+	g.DELETE("/script/:id", deletePlugin)
+	g.POST("/script/:id", savePlugin)
+
+}
+
+func savePlugin(c *gin.Context) {
+
+	j := make(map[string]string) //注意该结构接受的内容
+	_ = c.ShouldBind(&j)
+	str := j["data"]
+	id := c.Param("id")
+	db := BoltBucket("plugins")
+	_ = db.Set(id, str)
+	refreshPlugins()
+	successRespond(c, "更新完成", nil)
+}
+
+func deletePlugin(c *gin.Context) {
+	id := c.Param("id")
+	db := BoltBucket("plugins")
+	_ = db.Set(id, "")
+	refreshPlugins()
+	successRespond(c, "删除完成", nil)
+
+}
+
+func getPlugin(c *gin.Context) {
+	id := c.Param("id")
+	db := BoltBucket("plugins")
+	str := db.Get(id)
+	if len(str) > 0 {
+		f := createPlugin(str)
+		f.UniqueKey = id
+		successRespond(c, "", f)
+	} else {
+		successRespond(c, "", Function{})
+	}
+}
+
+func getPluginList(c *gin.Context) {
+	t := c.Param("type")
+	name := c.DefaultQuery("name", "")
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+
+	logs.Info(page)
+	db := BoltBucket("plugins")
+	var functions Functions
+	db.Foreach(func(k, v []byte) error {
+		f := createPlugin(string(v))
+		f.UniqueKey = string(k)
+		functions = append(functions, f)
+		return nil
+	})
+	f := func(d Function) bool {
+		r := true
+		switch t {
+		case "rule":
+			r = d.Rules != nil
+		case "module":
+			r = d.Module
+		case "cron":
+			r = len(d.Cron) > 0
+		case "server":
+			r = d.OnStart
+		}
+		if len(name) > 0 {
+			return r && strings.Contains(d.Title, name)
+		}
+		return r
+	}
+	sort.Sort(functions)
+	var list []*Function
+	for _, function := range functions {
+		if f(*function) {
+			list = append(list, function)
+		}
+	}
+
+	total := len(list)
+	if total > 0 {
+		page = page - 1
+		fromIndex := page * pageSize
+		//分页不能大于总数
+		if fromIndex >= total {
+			//throw new ServiceException("页数或分页大小不正确!");
+			successList(c, "", total, []*Function{})
+			return
+		}
+		toIndex := (page + 1) * pageSize
+		if toIndex > total {
+			toIndex = total
+		}
+		successList(c, "", total, list[fromIndex:toIndex])
+	} else {
+		successList(c, "", total, []*Function{})
+	}
+
 }
 
 func addBucketName(c *gin.Context) {

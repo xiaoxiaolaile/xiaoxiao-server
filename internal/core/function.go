@@ -38,6 +38,7 @@ type Function struct {
 	Content     string `json:"content"`
 	Module      bool   `json:"module"`
 	OnStart     bool   `json:"onStart"`
+	UniqueKey   string `json:"uniqueKey"`
 }
 
 type Filter struct {
