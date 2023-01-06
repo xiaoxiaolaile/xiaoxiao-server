@@ -10,15 +10,8 @@ import (
 	"time"
 )
 
-var client *resty.Client
-
-func init() {
-	client = resty.New() // 创建一个restry客户端
-	client.RemoveProxy()
-
-}
-
 func JsRequest(wt interface{}, handles ...func(error, map[string]interface{}, interface{}) interface{}) interface{} {
+	client := resty.New() // 创建一个restry客户端
 	//默认超时一分钟
 	client.SetTimeout(60 * time.Second)
 	defer client.RemoveProxy()
@@ -111,7 +104,7 @@ func JsRequest(wt interface{}, handles ...func(error, map[string]interface{}, in
 	//	req.SetTransport(Transport)
 	//}
 
-	client.SetProxy("http://127.0.0.1:7890")
+	//client.SetProxy("http://127.0.0.1:1087")
 	rsp, err := request.Execute(method, url)
 	rspObj := map[string]interface{}{}
 	var bd interface{}

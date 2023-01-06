@@ -77,15 +77,31 @@ func (s *SenderJs) Receive(data map[string]interface{}) {
 	}
 }
 
-func (s *SenderJs) Request(running func() bool, data map[string]interface{}, handles ...func(error, map[string]interface{}, interface{}) interface{}) {
-	go func() {
-		if running() {
-			JsRequest(data, handles...)
-			ticker := time.NewTicker(time.Millisecond * 5000)
-			for range ticker.C {
-				JsRequest(data, handles...)
-			}
+type Running struct {
+	data    map[string]interface{}
+	handles []func(error, map[string]interface{}, interface{}) interface{}
+}
 
+var runningList []Running
+
+func init() {
+	ticker := time.NewTicker(time.Millisecond * 5000)
+	go func() {
+		for range ticker.C {
+			for _, running := range runningList {
+				JsRequest(running.data, running.handles...)
+			}
 		}
 	}()
+
+}
+
+func (s *SenderJs) Request(running func() bool, data map[string]interface{}, handles ...func(error, map[string]interface{}, interface{}) interface{}) {
+	if running() {
+		runningList = append(runningList, Running{
+			data:    data,
+			handles: handles,
+		})
+
+	}
 }

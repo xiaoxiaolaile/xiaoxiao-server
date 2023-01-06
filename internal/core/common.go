@@ -35,6 +35,7 @@ func GenUUID() string {
 
 func refreshPlugins() {
 	functions = []*Function{}
+	runningList = []Running{}
 	initPlugins()
 	keyMap = initServerPlugin(getServers()...)
 }
