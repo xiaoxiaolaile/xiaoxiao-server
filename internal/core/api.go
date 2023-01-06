@@ -24,6 +24,8 @@ func initApi() {
 
 	logs.Printf("可视化面板临时账号密码：%s %s", defaultUserName, defaultPassword)
 
+	server.GET("/ws", cmdWebSocket)
+
 	g := server.Group("/api")
 	g.POST("/login/account", userLogin)
 
@@ -36,6 +38,7 @@ func initApi() {
 	g.GET("/script/:id", getPlugin)
 	g.DELETE("/script/:id", deletePlugin)
 	g.POST("/script/:id", savePlugin)
+	g.GET("/ws", cmdWebSocket)
 
 }
 
