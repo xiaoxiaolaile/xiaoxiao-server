@@ -15,6 +15,7 @@ func Init() {
 	initPlugins()
 	initWeb()
 	initApi()
+	initStatic()
 
 	NewPlugin(Function{
 		Rules: []string{"hello"},
