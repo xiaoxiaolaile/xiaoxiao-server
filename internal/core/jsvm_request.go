@@ -14,6 +14,7 @@ func JsRequest(wt interface{}, handles ...func(error, map[string]interface{}, in
 	client := resty.New() // 创建一个restry客户端
 	//默认超时一分钟
 	client.SetTimeout(60 * time.Second)
+	client.SetRetryCount(5)
 	defer client.RemoveProxy()
 	var method = resty.MethodGet
 	var url = ""
