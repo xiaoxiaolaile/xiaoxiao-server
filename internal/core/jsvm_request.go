@@ -2,10 +2,12 @@ package core
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/dop251/goja"
 	"github.com/go-resty/resty/v2"
 	logs "github.com/sirupsen/logrus"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -14,11 +16,13 @@ func JsRequest(wt interface{}, handles ...func(error, map[string]interface{}, in
 	client := resty.New() // 创建一个restry客户端
 	//默认超时一分钟
 	client.SetTimeout(60 * time.Second)
-	client.SetRetryCount(5)
+	//client.SetRetryCount(5)
 	defer client.RemoveProxy()
 	var method = resty.MethodGet
 	var url = ""
+	var headerLocation = ""
 	var isJson bool
+	//var location bool
 	request := client.R()
 	switch wt.(type) {
 	case string:
@@ -84,29 +88,41 @@ func JsRequest(wt interface{}, handles ...func(error, map[string]interface{}, in
 			case "proxyurl":
 				proxyUrl := props[i].(string)
 				client.SetProxy(proxyUrl)
+			case "allowredirects":
+				allowredirects := props[i].(bool)
+				if !allowredirects {
+					//client.SetRedirectPolicy(resty.NoRedirectPolicy())
+					client.SetRedirectPolicy(resty.RedirectPolicyFunc(func(req *http.Request, via []*http.Request) error {
+						// Implement your logic here
+						//logs.Info(req, via)
+						// return nil for continue redirect otherwise return error to stop/prevent redirect
+						headerLocation = req.URL.String()
+						return errors.New("no redirect")
+					}))
+				}
 			}
 		}
 	}
 
-	//if location {
-	//	req.SetCheckRedirect(func(req *http.Request, via []*http.Request) error {
-	//		return http.ErrUseLastResponse
-	//	})
-	//	rsp, err := req.Response()
-	//	if err == nil && (rsp.StatusCode == 301 || rsp.StatusCode == 302) {
-	//		return rsp.Header.Get("Location")
-	//	} else
-	//	//非重定向,允许用户自定义判断
-	//	if len(handles) == 0 {
-	//		return err
-	//	}
-	//}
 	//if useproxy && Transport != nil {
 	//	req.SetTransport(Transport)
 	//}
 
 	//client.SetProxy("http://127.0.0.1:1087")
+
 	rsp, err := request.Execute(method, url)
+	//logs.Info("执行了 ", wt, rsp)
+	//if location {
+	if rsp.StatusCode() == 301 || rsp.StatusCode() == 302 {
+		//logs.Info("重定向 ", headerLocation)
+		//err = nil
+		rspObj := map[string]interface{}{}
+		rspObj["headers"] = map[string]interface{}{
+			"Location": headerLocation,
+		}
+		return rspObj
+	}
+	//}
 	rspObj := map[string]interface{}{}
 	var bd interface{}
 	if err == nil {
@@ -121,6 +137,7 @@ func JsRequest(wt interface{}, handles ...func(error, map[string]interface{}, in
 			bd = string(data)
 		}
 		rspObj["body"] = bd
+
 		rspObj["headers"] = rsp.Header()
 	} else {
 		logs.Error(err)
