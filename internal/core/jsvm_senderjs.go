@@ -29,6 +29,17 @@ type Im struct {
 	s    *SenderJs
 }
 
+func (i *Im) IsAdmin() bool {
+	var b = BoltBucket(i.s.Name)
+	for _, s := range b.GetArray("masters") {
+		if s == fmt.Sprint(i.GetUserId()) {
+			return true
+		}
+		//strings.Contains(wx.GetString("masters"), fmt.Sprint(i.GetUserId()))
+	}
+	return false
+}
+
 func (i *Im) Reply(msgs ...interface{}) (arr []string, err error) {
 	logs.Info("reply message", msgs)
 	arr, err = i.Faker.Reply(msgs)
@@ -47,15 +58,25 @@ func (s *SenderJs) Receive(data map[string]interface{}) {
 		//解析命令，修改命令
 		//logs.Info("收到消息：", data)
 		//logs.Info("收到消息content：", data["content"])
+		//消息格式 {"user_id":"1234", "chat_id": 10000, "content": "消息内容"}
 		if str, ok := data["content"]; ok {
 			//进行解析，和替换内容
 			go func() {
+				chatId := 0
+
+				switch data["chat_id"].(type) {
+				case int:
+					chatId = data["chat_id"].(int)
+				}
+
 				f := &Im{
 					Faker: Faker{
 						Type:     "carry",
 						Platform: s.Name,
 						Message:  fmt.Sprintf("%v", str),
 						Admin:    true,
+						UserId:   fmt.Sprintf("%v", data["user_id"]),
+						ChatId:   chatId,
 					},
 					data: data,
 					s:    s,
