@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
-	"regexp"
-	"strings"
 )
 
 func mapFileSystemSourceLoader(files map[string]string) require.SourceLoader {
@@ -42,15 +40,15 @@ func main() {
 `
 
 	//require\(['"](.*)['"]\)
-	reStr := `require\(['"](.*)['"]\)`
-	re := regexp.MustCompile(reStr)
-	str = re.ReplaceAllStringFunc(str, func(s string) string {
-		s = strings.ReplaceAll(s, "\"", "'")
-		if !strings.Contains(s, "./") {
-			s = s[:9] + "./" + s[9:]
-		}
-		return s
-	})
+	//reStr := `require\(['"](.*)['"]\)`
+	//re := regexp.MustCompile(reStr)
+	//str = re.ReplaceAllStringFunc(str, func(s string) string {
+	//	s = strings.ReplaceAll(s, "\"", "'")
+	//	if !strings.Contains(s, "./") {
+	//		s = s[:9] + "./" + s[9:]
+	//	}
+	//	return s
+	//})
 	res, _ := vm.RunString(str)
 
 	v := res.Export()

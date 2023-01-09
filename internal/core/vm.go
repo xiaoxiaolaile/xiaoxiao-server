@@ -3,8 +3,6 @@ package core
 import (
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
-	"regexp"
-	"strings"
 )
 
 // 运行js脚本
@@ -21,15 +19,15 @@ func runScript(vm *goja.Runtime, s Sender, str string) (value goja.Value, err er
 	})
 	_ = vm.Set("request", JsRequest)
 
-	reStr := `require\(['"](.*)['"]\)`
-	re := regexp.MustCompile(reStr)
-	str = re.ReplaceAllStringFunc(str, func(s string) string {
-		s = strings.ReplaceAll(s, "\"", "'")
-		if !strings.Contains(s, "./") {
-			s = s[:9] + "./" + s[9:]
-		}
-		return s
-	})
+	//reStr := `require\(['"](.*)['"]\)`
+	//re := regexp.MustCompile(reStr)
+	//str = re.ReplaceAllStringFunc(str, func(s string) string {
+	//	s = strings.ReplaceAll(s, "\"", "'")
+	//	if !strings.Contains(s, "./") {
+	//		s = s[:9] + "./" + s[9:]
+	//	}
+	//	return s
+	//})
 	value, err = vm.RunString(str)
 	return
 }
