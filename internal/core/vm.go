@@ -86,7 +86,7 @@ func loadModules(vm *goja.Runtime) {
 	for _, function := range arr {
 		m[function.Title] = function.Content
 	}
-	r := require.NewRegistry(require.WithLoader(mapFileSystemSourceLoader(m)))
+	r := require.NewRegistry(require.WithGlobalFolders("."), require.WithLoader(mapFileSystemSourceLoader(m)))
 	r.Enable(vm)
 
 }
