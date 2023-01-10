@@ -258,17 +258,19 @@ func userLogin(c *gin.Context) {
 	logs.Printf("username = %s, password = %s", username, password)
 
 	if defaultUserName == username && defaultPassword == password {
-		c.SetCookie("token", loginUUid, 24*60*60, "/", "localhost", false, true)
+		//c.SetCookie("token", loginUUid, 24*60*60, "/", "localhost", false, true)
 		c.JSON(200, LoginData{
 			CurrentAuthority: "admin",
 			Status:           "ok",
 			Type:             "account",
+			Token:            loginUUid,
 		})
 	} else {
 		c.JSON(200, LoginData{
 			CurrentAuthority: "guest",
 			Status:           "error",
 			Type:             "account",
+			Token:            loginUUid,
 		})
 	}
 
@@ -278,4 +280,5 @@ type LoginData struct {
 	CurrentAuthority string `json:"currentAuthority"`
 	Status           string `json:"status"`
 	Type             string `json:"type"`
+	Token            string `json:"token"`
 }

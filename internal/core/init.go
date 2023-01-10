@@ -10,6 +10,7 @@ func Init() {
 	initToHandleMessage()
 	initTimeLoc()
 	initLog()
+	InitWatch()
 	InitStore()
 	initSillyGirl()
 	initPlugins()

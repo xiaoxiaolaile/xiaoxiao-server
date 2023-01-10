@@ -34,6 +34,7 @@ func GenUUID() string {
 }
 
 func refreshPlugins() {
+	InitWatch()
 	functions = []*Function{}
 	runningList = []Running{}
 	initPlugins()
