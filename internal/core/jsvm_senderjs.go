@@ -42,14 +42,16 @@ func (i *Im) IsAdmin() bool {
 
 func (i *Im) Reply(msgs ...interface{}) (arr []string, err error) {
 	logs.Info("reply message", msgs)
+
 	arr, err = i.Faker.Reply(msgs)
-	if len(msgs) > 0 {
-		if i.s.f != nil {
-			i.data["content"] = getMessage(msgs)
+	if i.s.f != nil {
+		for _, msg := range msgs {
+			i.data["content"] = fmt.Sprintf("%v", msg)
 			i.s.f(i.data)
 		}
 
 	}
+
 	return
 }
 

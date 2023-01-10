@@ -45,6 +45,7 @@ func refreshPlugins() {
 func getMessage(msgs ...interface{}) string {
 	message := ""
 	for _, msg := range msgs {
+		fmt.Println("test -> ", msg)
 		message += fmt.Sprintf("%v", msg)
 	}
 
