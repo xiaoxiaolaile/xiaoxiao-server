@@ -45,7 +45,7 @@ func (i *Im) Reply(msgs ...interface{}) (arr []string, err error) {
 	arr, err = i.Faker.Reply(msgs)
 	if len(msgs) > 0 {
 		if i.s.f != nil {
-			i.data["content"] = msgs[0]
+			i.data["content"] = getMessage(msgs)
 			i.s.f(i.data)
 		}
 

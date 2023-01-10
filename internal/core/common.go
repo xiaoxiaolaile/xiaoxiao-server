@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 )
 
@@ -39,4 +40,13 @@ func refreshPlugins() {
 	runningList = []Running{}
 	initPlugins()
 	keyMap = initServerPlugin(getServers()...)
+}
+
+func getMessage(msgs ...interface{}) string {
+	message := ""
+	for _, msg := range msgs {
+		message += fmt.Sprintf("%v", msg)
+	}
+
+	return message
 }

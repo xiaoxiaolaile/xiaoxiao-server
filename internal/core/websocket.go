@@ -73,6 +73,7 @@ func (i *WebsocketIm) Reply(msgs ...interface{}) (arr []string, err error) {
 		if "undefined" == message {
 			return
 		}
+		message = getMessage(msgs)
 		err = i.ws.WriteMessage(i.messageType, []byte(message))
 		if err != nil {
 			log.Println("write:", err)
