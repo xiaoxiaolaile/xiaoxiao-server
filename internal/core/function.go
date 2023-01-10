@@ -234,7 +234,7 @@ func addRules(prefix string, function *Function) {
 			rules[i] = strings.Replace(rules[i], ")", `[)]`, -1)
 			rules[i] = regexp.MustCompile(`\?$`).ReplaceAllString(rules[i], `([\s\S]+)`)
 			rules[i] = strings.Replace(rules[i], " ", `\s+`, -1)
-			rules[i] = strings.Replace(rules[i], "?", `(\S+)`, -1)
+			rules[i] = strings.Replace(rules[i], "?", `([\s\S]+)`, -1)
 			rules[i] = "^" + rules[i] + "$"
 		}
 		f := function.Handle
@@ -269,8 +269,7 @@ func parseFunction(sender Sender) {
 				if res := regexp.MustCompile(rule).FindAllStringSubmatch(content, -1); len(res) > 0 {
 					var tmp [][]string
 					for i := range res {
-						//tmp = append(tmp, res[i][1:])
-						tmp = append(tmp, res[i])
+						tmp = append(tmp, res[i][1:])
 					}
 					if !function.Hidden {
 						logs.Info("1:匹配到规则：%s", rule)

@@ -24,9 +24,11 @@ func JsRequest(wt interface{}, handles ...func(error, map[string]interface{}, in
 	var isJson bool
 	//var location bool
 	request := client.R()
+	onlyGet := false
 	switch wt.(type) {
 	case string:
 		url = wt.(string)
+		onlyGet = true
 	default:
 		props := wt.(map[string]interface{})
 		for i := range props {
@@ -123,6 +125,7 @@ func JsRequest(wt interface{}, handles ...func(error, map[string]interface{}, in
 		return rspObj
 	}
 	//}
+
 	rspObj := map[string]interface{}{}
 	var bd interface{}
 	if err == nil {
@@ -142,6 +145,15 @@ func JsRequest(wt interface{}, handles ...func(error, map[string]interface{}, in
 	} else {
 		logs.Error(err)
 	}
+
+	if onlyGet {
+		if len(handles) > 0 {
+			return handles[0](err, rspObj, bd)
+		} else {
+			return bd
+		}
+	}
+
 	if len(handles) > 0 {
 		return handles[0](err, rspObj, bd)
 	} else {
