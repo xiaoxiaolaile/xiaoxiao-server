@@ -269,7 +269,8 @@ func parseFunction(sender Sender) {
 				if res := regexp.MustCompile(rule).FindAllStringSubmatch(content, -1); len(res) > 0 {
 					var tmp [][]string
 					for i := range res {
-						tmp = append(tmp, res[i][1:])
+						//tmp = append(tmp, res[i][1:])
+						tmp = append(tmp, res[i])
 					}
 					if !function.Hidden {
 						logs.Info("1:匹配到规则：%s", rule)
