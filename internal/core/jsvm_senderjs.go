@@ -46,8 +46,12 @@ func (i *Im) Reply(msgs ...interface{}) (arr []string, err error) {
 	arr, err = i.Faker.Reply(msgs)
 	if i.s.f != nil {
 		for _, msg := range msgs {
-			i.data["content"] = fmt.Sprintf("%v", msg)
-			i.s.f(i.data)
+			message := fmt.Sprintf("%v", msg)
+			if "undefined" != message {
+				i.data["content"] = message
+				i.s.f(i.data)
+			}
+
 		}
 
 	}

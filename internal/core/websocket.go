@@ -65,18 +65,16 @@ func (i *WebsocketIm) Reply(msgs ...interface{}) (arr []string, err error) {
 	logs.Info("reply message2", msgs)
 	arr, err = i.Faker.Reply(msgs)
 	if len(msgs) > 0 {
-		//if i.s.f != nil {
-		//	i.data["content"] = msgs[0]
-		//	i.s.f(i.data)
-		//}
-		message := fmt.Sprintf("%v", msgs[0])
-		if "undefined" == message {
-			return
-		}
-		message = getMessage(msgs)
-		err = i.ws.WriteMessage(i.messageType, []byte(message))
-		if err != nil {
-			log.Println("write:", err)
+
+		for _, msg := range msgs {
+			message := fmt.Sprintf("%v", msg)
+			if "undefined" != message {
+				err = i.ws.WriteMessage(i.messageType, []byte(message))
+				if err != nil {
+					log.Println("write:", err)
+				}
+			}
+
 		}
 
 	}
