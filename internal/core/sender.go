@@ -3,7 +3,6 @@ package core
 import (
 	"fmt"
 	logs "github.com/sirupsen/logrus"
-	"net/url"
 	"regexp"
 	"strings"
 )
@@ -69,34 +68,13 @@ func HandleMessage(sender Sender) {
 		logs.Printf("接收到消息 %v/%v@%v：%s", i, u, g, content)
 	}
 
-	mtd := false
-
-	WaitsRange(func(k, v interface{}) bool {
+	key := fmt.Sprintf("u=%v&c=%v&i=%v", sender.GetUserId(), sender.GetChatId(), sender.GetImType())
+	if v, ok := waits.Load(key); ok {
 		c := v.(*Carry)
-		vs, _ := url.ParseQuery(k.(string))
-		//userID := vs.Get("u")
-		//chatID := vs.Get("c")
-		//imType := vs.Get("i")
-		//forGroup := vs.Get("f")
-		logs.Info(vs)
-
-		//if imType != i {
-		//	return true
-		//}
-		//if chatID != g && (forGroup != "me" || g != "0") {
-		//	return true
-		//}
-		//if userID != u && (forGroup == "" || forGroup == "me") {
-		//	return true
-		//}
 		if m := regexp.MustCompile(c.Pattern).FindString(content); m != "" {
-			mtd = true
 			logs.Info(m)
 			c.Chan <- m
 		}
-		return true
-	})
-	if mtd {
 		return
 	}
 

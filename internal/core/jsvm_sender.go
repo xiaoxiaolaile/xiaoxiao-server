@@ -131,7 +131,8 @@ func listen(sender *Faker, data int64, pattern string) *ResSender {
 
 	//进行判断 ，如果第一个参数是数字，进行监听，如果是数组，进行注册插件
 
-	key := fmt.Sprintf("u=%v&c=%v&i=%v&t=%v", sender.GetUserId(), sender.GetChatId(), sender.GetImType(), time.Now().UnixNano())
+	//key := fmt.Sprintf("u=%v&c=%v&i=%v&t=%v", sender.GetUserId(), sender.GetChatId(), sender.GetImType(), time.Now().UnixNano())
+	key := fmt.Sprintf("u=%v&c=%v&i=%v", sender.GetUserId(), sender.GetChatId(), sender.GetImType())
 	timeout := time.Millisecond * time.Duration(data)
 	//if fg != nil {
 	//	if *fg == "me" {
