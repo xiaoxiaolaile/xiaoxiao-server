@@ -232,9 +232,9 @@ func addRules(prefix string, function *Function) {
 			}
 			rules[i] = strings.Replace(rules[i], "(", `[(]`, -1)
 			rules[i] = strings.Replace(rules[i], ")", `[)]`, -1)
-			rules[i] = regexp.MustCompile(`\?$`).ReplaceAllString(rules[i], `([\s\S]+)`)
+			rules[i] = regexp.MustCompile(`\?$`).ReplaceAllString(rules[i], `[.*]`)
 			rules[i] = strings.Replace(rules[i], " ", `\s+`, -1)
-			rules[i] = strings.Replace(rules[i], "?", `([\s\S]+)`, -1)
+			rules[i] = strings.Replace(rules[i], "?", `[.*]`, -1)
 			rules[i] = "^" + rules[i] + "$"
 		}
 		f := function.Handle
