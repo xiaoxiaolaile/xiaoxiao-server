@@ -452,10 +452,11 @@ func (sender *BaseSender) Param(key interface{}) string {
 
 	switch key.(type) {
 	case int64:
-		return sender.Get(int(key.(int64)))
+
+		return strings.TrimSpace(sender.Get(int(key.(int64))))
 	case string:
 		if len(sender.matches) > 0 {
-			return param(sender.RuleContent, key.(string), sender.matches[0])
+			return strings.TrimSpace(param(sender.RuleContent, key.(string), sender.matches[0]))
 		}
 	}
 	return ""
