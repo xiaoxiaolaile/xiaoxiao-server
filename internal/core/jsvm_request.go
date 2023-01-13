@@ -80,7 +80,7 @@ func JsRequest(wt interface{}, handles ...func(error, map[string]interface{}, in
 					body = v
 				}
 				request.SetBody(body)
-			case "formdata":
+			case "formdata", "form":
 				data := make(map[string]string)
 				formData := props[i].(map[string]interface{})
 				for s, v := range formData {
