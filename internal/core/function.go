@@ -219,6 +219,7 @@ func addRules(prefix string, function *Function) {
 
 	if len(rules) > 0 {
 		for i := range rules {
+			rules[i] = strings.TrimSpace(rules[i])
 			if strings.Contains(rules[i], "raw ") {
 				rules[i] = strings.Replace(rules[i], "raw ", "", -1)
 				continue
@@ -230,8 +231,10 @@ func addRules(prefix string, function *Function) {
 			if prefix != "" {
 				rules[i] = prefix + `\s+` + rules[i]
 			}
+
 			rules[i] = strings.Replace(rules[i], "(", `[(]`, -1)
 			rules[i] = strings.Replace(rules[i], ")", `[)]`, -1)
+			rules[i] = regexp.MustCompile(`^\?`).ReplaceAllString(rules[i], `()?`)
 			rules[i] = regexp.MustCompile(`\?$`).ReplaceAllString(rules[i], `[.*]`)
 			rules[i] = strings.Replace(rules[i], " ", `\s+`, -1)
 			rules[i] = strings.Replace(rules[i], "?", `[.*]`, -1)
