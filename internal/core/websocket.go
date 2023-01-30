@@ -68,6 +68,7 @@ func (i *WebsocketIm) Reply(msgs ...interface{}) (arr []string, err error) {
 
 		for _, msg := range msgs {
 			message := fmt.Sprintf("%v", msg)
+			message = unicode2utf8(message)
 			if "undefined" != message {
 				err = i.ws.WriteMessage(i.messageType, []byte(message))
 				if err != nil {

@@ -47,6 +47,7 @@ func (i *Im) Reply(msgs ...interface{}) (arr []string, err error) {
 	if i.s.f != nil {
 		for _, msg := range msgs {
 			message := fmt.Sprintf("%v", msg)
+			message = unicode2utf8(message)
 			if "undefined" != message {
 				i.data["content"] = message
 				i.s.f(i.data)
